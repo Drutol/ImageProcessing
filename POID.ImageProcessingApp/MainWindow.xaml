@@ -1,0 +1,99 @@
+﻿<Window x:Class="POID.ImageProcessingApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:POID.ImageProcessingApp"
+        xmlns:viewModels="clr-namespace:POID.ImageProcessingApp.ViewModels"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:oxyPlot="clr-namespace:OxyPlot;assembly=OxyPlot"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid Background="#f1f1f1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#fafafa" Width="220" Padding="10">
+        <Grid>
+
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <Button Command="{Binding AdjustBrightnessCommand}" >
+                    <Button.Content>
+                        <TextBlock>Adjust brightness: <Run Text="{Binding BrightnessSliderValue}"/></TextBlock>
+                    </Button.Content>
+                </Button>
+                <Slider Minimum="-255" Maximum="255" Margin="5"
+                        Value="{Binding BrightnessSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TickFrequency="1" />
+                <Button Command="{Binding AdjustContrastCommand}">
+                    <Button.Content>
+                        <TextBlock>Adjust contrast: <Run Text="{Binding ContrastSliderValue, StringFormat=N3}" /></TextBlock>
+                    </Button.Content>
+                </Button>
+                <Slider Minimum="0" Maximum="10" Margin="5"
+                        Value="{Binding ContrastSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Create negative" Command="{Binding CreateNegativeCommand}" />
+
+            </StackPanel>
+
+            <ListView Grid.Row="1" ItemsSource="{Binding Images}" Margin="0,10,0,0"
+                      SelectedItem="{Binding SelectedImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Image Grid.Row="0" Margin="20" Source="{Binding InputImageSource}" />
+
+            <oxy:Plot Grid.Row="1" Height="150">
+                <oxy:Plot.Series>
+                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                      ItemsSource="{Binding InputImageHistogram}" FillColor="Black" StrokeColor="Black" />
+                </oxy:Plot.Series>
+                <oxy:Plot.Axes>
+                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                </oxy:Plot.Axes>
+            </oxy:Plot>
+        </Grid>
+
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Image Grid.Row="0" Margin="20" Source="{Binding OutputImageSource}" />
+
+            <oxy:Plot Grid.Row="1" Height="150">
+                <oxy:Plot.Series>
+                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                      ItemsSource="{Binding OutputImageHistogram}" FillColor="Black"
+                                      StrokeColor="Black" />
+                </oxy:Plot.Series>
+                <oxy:Plot.Axes>
+                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                </oxy:Plot.Axes>
+            </oxy:Plot>
+        </Grid>
+    </Grid>
+</Window>
