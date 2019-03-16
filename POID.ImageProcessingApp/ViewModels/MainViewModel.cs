@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using OxyPlot.Series;
+using POID.ImageProcessingApp.Filters;
 using POID.ImageProcessingApp.Processing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
@@ -30,6 +31,13 @@ namespace POID.ImageProcessingApp.ViewModels
         private List<ColumnItem> _outputImageHistogram;
         private int _brightnessSliderValue;
         private double _contrastSliderValue;
+        private double[,] _filterMask = new double[,]
+        {
+            { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1,1  }
+        };
+
+        private int _selectedMatrixSize = 3;
+        private IFilter _selectedFilter;
 
         public List<string> Images { get; set; }
 
@@ -103,9 +111,54 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public double[,] FilterMask
+        {
+            get => _filterMask;
+            set
+            {
+                _filterMask = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public List<int> MatrixSizes { get; } = new List<int>
+        {
+            3,
+            5,
+            7
+        };
+
+        public List<IFilter> AvailableFilter { get; } = new List<IFilter>
+        {
+            new AverageFilter(),
+            new MedianFilter(),
+            new GenericFilter(),
+        };
+
+        public IFilter SelectedFilter
+        {
+            get => _selectedFilter;
+            set
+            {
+                _selectedFilter = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int SelectedMatrixSize
+        {
+            get => _selectedMatrixSize;
+            set
+            {
+                _selectedMatrixSize = value;
+                FilterMask = new double[value, value];
+            }
+        }
+
         public MainViewModel()
         {
             Images = Directory.GetFiles("Assets").ToList();
+            SelectedFilter = AvailableFilter.First();
         }
 
         private void LoadInputImage()
@@ -147,5 +200,12 @@ namespace POID.ImageProcessingApp.ViewModels
             if (_inputImageProcessor != null)
                 LoadOutputImage(_inputImageProcessor.AdjustContrast((float) ContrastSliderValue));
         });
+
+        public RelayCommand ApplyFilterCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor != null)
+                LoadOutputImage(_inputImageProcessor.ApplyFilter(FilterMask, SelectedMatrixSize, SelectedFilter));
+        });
+
     }
 }

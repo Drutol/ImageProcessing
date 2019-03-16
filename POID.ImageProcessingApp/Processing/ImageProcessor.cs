@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using OxyPlot.Series;
+using POID.ImageProcessingApp.Filters;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -57,9 +58,9 @@ namespace POID.ImageProcessingApp.Processing
                 {
                     var current = image[i, j];
                     image[i, j] = new Rgb24(
-                        r: (byte)(255 - current.R),
-                        g: (byte)(255 - current.G),
-                        b: (byte)(255 - current.B));
+                        r: (byte) (255 - current.R),
+                        g: (byte) (255 - current.G),
+                        b: (byte) (255 - current.B));
                 }
             }
 
@@ -76,9 +77,9 @@ namespace POID.ImageProcessingApp.Processing
                 {
                     var current = image[i, j];
                     image[i, j] = new Rgb24(
-                        r: (byte)CheckOverflow(current.R + value),
-                        g: (byte)CheckOverflow(current.G + value),
-                        b: (byte)CheckOverflow(current.B + value));
+                        r: (byte) CheckOverflow(current.R + value),
+                        g: (byte) CheckOverflow(current.G + value),
+                        b: (byte) CheckOverflow(current.B + value));
 
                     int CheckOverflow(int val)
                     {
@@ -104,9 +105,9 @@ namespace POID.ImageProcessingApp.Processing
                 {
                     var current = image[i, j];
                     image[i, j] = new Rgb24(
-                        r: (byte)CheckOverflow(current.R * value),
-                        g: (byte)CheckOverflow(current.G * value),
-                        b: (byte)CheckOverflow(current.B * value));
+                        r: (byte) CheckOverflow(current.R * value),
+                        g: (byte) CheckOverflow(current.G * value),
+                        b: (byte) CheckOverflow(current.B * value));
 
                     float CheckOverflow(float val)
                     {
@@ -120,6 +121,42 @@ namespace POID.ImageProcessingApp.Processing
             }
 
             return image;
+        }
+
+        public Image<Rgb24> ApplyFilter(double[,] filterMask, int matrixSize, IFilter filter)
+        {
+            var image = _image.Clone();
+
+            var margin = (int) Math.Floor(matrixSize / 2f);
+
+            for (int i = margin; i < image.Width - margin; i++)
+            {
+                for (int j = margin; j < image.Height - margin; j++)
+                {
+                    image[i, j] = filter.Compute(GetNeighbourhood(_image, i, j, margin, matrixSize), filterMask, matrixSize);
+                }
+            }
+
+            return image;
+        }
+
+        private Rgb24[,] GetNeighbourhood(Image<Rgb24> image, int i, int j, int margin, int matrixSize)
+        {
+            var neigbourhood = new Rgb24[matrixSize, matrixSize];
+            int i1 = 0;
+            for (int x = i - margin; x <= i + margin; x++)
+            {
+                int j1 = 0;
+                for (int y = j - margin; y <= j + margin; y++)
+                {
+                    neigbourhood[i1, j1] = image[x, y];
+                    j1++;
+                }
+
+                i1++;
+            }
+
+            return neigbourhood;
         }
     }
 }
