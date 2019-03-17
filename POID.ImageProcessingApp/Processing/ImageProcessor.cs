@@ -130,12 +130,8 @@ namespace POID.ImageProcessingApp.Processing
             var margin = (int) Math.Floor(matrixSize / 2f);
 
             for (int i = margin; i < image.Width - margin; i++)
-            {
                 for (int j = margin; j < image.Height - margin; j++)
-                {
                     image[i, j] = filter.Compute(GetNeighbourhood(_image, i, j, margin, matrixSize), filterMask, matrixSize);
-                }
-            }
 
             return image;
         }
@@ -157,18 +153,6 @@ namespace POID.ImageProcessingApp.Processing
             }
 
             return neigbourhood;
-        }
-
-        public Image<Rgb24> FilterRoberts(double[,] filterMask, int matrixSize, IFilter filter)
-        {
-            var image = _image.Clone();
-            var margin = (int)Math.Floor(matrixSize / 2f);
-
-            for (int i = 0; i < image.Width; i++)
-            for (int j = 0; j < image.Height; j++)
-                image[i, j] = filter.Compute(GetNeighbourhood(_image, i, j, margin, matrixSize), filterMask, matrixSize);
-
-            return image;
         }
     }
 }
