@@ -11,11 +11,6 @@ namespace POID.ImageProcessingApp.Filters
     {
         public string Name { get; } = "EdgeDetector Filter";
 
-        private double[,] _filterMatrix =
-            new double[,] { { -1, -1, -1, },
-                { -1,  8, -1, },
-                { -1, -1, -1, }, };
-
         public Rgb24 Compute(Rgb24[,] neighbourhood, double[,] mask, int size)
         {
             var resultR = 0.0;
