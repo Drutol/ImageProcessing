@@ -33,7 +33,7 @@ namespace POID.ImageProcessingApp.ViewModels
         private double _contrastSliderValue;
         private double[,] _filterMask = new double[,]
         {
-            { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 }
+            { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1,1  }
         };
 
         private int _selectedMatrixSize = 3;
@@ -133,7 +133,6 @@ namespace POID.ImageProcessingApp.ViewModels
             new AverageFilter(),
             new MedianFilter(),
             new GenericFilter(),
-            new EdgeDetectorFilter(),
         };
 
         public IFilter SelectedFilter
