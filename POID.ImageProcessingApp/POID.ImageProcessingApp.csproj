@@ -99,6 +99,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Filters\AverageFilter.cs" />
+    <Compile Include="Filters\EdgeDetectorFilter.cs" />
     <Compile Include="Filters\GenericFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
