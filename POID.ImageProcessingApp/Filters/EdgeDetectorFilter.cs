@@ -34,12 +34,14 @@ namespace POID.ImageProcessingApp.Filters
                     var tmpB2 = neighbourhood[i + 1, j].B - neighbourhood[i, j + 1].B;
                     resultB = Math.Abs(tmpB1) + Math.Abs(tmpB2);
 
+
+                    var r = CheckOverflow(resultR);
+                    var g = CheckOverflow(resultG);
+                    var b = CheckOverflow(resultB);
+
+                    return new Rgb24(r, g, b);
                 }
             }
-
-            var r = CheckOverflow(resultR);
-            var g = CheckOverflow(resultG);
-            var b = CheckOverflow(resultB);
 
             byte CheckOverflow(double val)
             {
@@ -49,8 +51,7 @@ namespace POID.ImageProcessingApp.Filters
                     return 0;
                 return (byte) val;
             }
-
-            return new Rgb24(r, g, b);
+          return new Rgb24(0,0,0);
         }
     }
 }

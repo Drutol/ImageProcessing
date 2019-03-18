@@ -31,6 +31,8 @@ namespace POID.ImageProcessingApp.ViewModels
         private List<ColumnItem> _outputImageHistogram;
         private int _brightnessSliderValue;
         private double _contrastSliderValue;
+        private int _minimumChannelSliderValue;
+        private int _maximumChannelSliderValue;
         private double[,] _filterMask = new double[,]
         {
             { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 }
@@ -111,6 +113,26 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public int MinimumChannelSliderValue
+        {
+            get => _minimumChannelSliderValue;
+            set
+            {
+                _minimumChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int MaximumChannelSliderValue
+        {
+            get => _maximumChannelSliderValue;
+            set
+            {
+                _maximumChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public double[,] FilterMask
         {
             get => _filterMask;
@@ -183,6 +205,12 @@ namespace POID.ImageProcessingApp.ViewModels
             _outputImageProcessor = new ImageProcessor(_outputImage);
             OutputImageHistogram = _outputImageProcessor.GenerateHistogram();
         }
+
+        public RelayCommand H5 => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor != null)
+                LoadOutputImage(_inputImageProcessor.CountDisH5Crap(MinimumChannelSliderValue, MaximumChannelSliderValue));
+        });
 
         public RelayCommand CreateNegativeCommand => new RelayCommand(() =>
         {

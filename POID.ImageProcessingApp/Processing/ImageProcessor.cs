@@ -123,6 +123,49 @@ namespace POID.ImageProcessingApp.Processing
             return image;
         }
 
+        public Image<Rgb24> CountDisH5Crap(int min, int max)
+        {
+            var image = _image.Clone();
+
+            for (int i = 0; i < image.Width; i++)
+            {
+                for (int j = 0; j < image.Height; j++)
+                {
+                    var current = image[i, j];
+
+                    var divider = max / min;
+                    var result = min * divider;
+                    var f = current.R;
+                    var root = 0;
+                    var sum = 0;
+                    for (int k = 0; k <= f; k++)
+                    {
+                        root += k * k;
+                        sum += k ;
+                    }
+
+                    root = root / sum;
+                    var final = Math.Pow(result, root);
+
+                    final = CheckOverflow((float)final);
+                    float CheckOverflow(float val)
+                    {
+                        if (val > 255)
+                            return 255;
+                        if (val < 0)
+                            return 0;
+                        return val;
+                    }
+
+                    current.R = (byte) final;
+
+                    image[i, j] = current;
+                }
+            }
+
+            return image;
+        }
+
         public Image<Rgb24> ApplyFilter(double[,] filterMask, int matrixSize, IFilter filter)
         {
             var image = _image.Clone();

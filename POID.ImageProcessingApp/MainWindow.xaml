@@ -10,7 +10,7 @@
         xmlns:dataGrid2D="http://gu.se/DataGrid2D"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="657.692" Width="800">
     <Grid Background="#f1f1f1">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -45,8 +45,18 @@
                     </Button>
                     <Slider Minimum="0" Maximum="10" Margin="5"
                             Value="{Binding ContrastSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Content="Create negative" Command="{Binding CreateNegativeCommand}" />
 
+                    <TextBlock><Run Text="Minimal Value: "/> <Run Text="{Binding MinimumChannelSliderValue, StringFormat=N3}" /></TextBlock>
+                    <Slider Minimum="0" Maximum="255" Margin="5"
+                        Value="{Binding MinimumChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock><Run Text="Maximal Value: "/> <Run Text="{Binding MaximumChannelSliderValue, StringFormat=N3}" /></TextBlock>
+                    <Slider Minimum="{Binding MinimumChannelSliderValue}" Maximum="255" Margin="5"
+                            Value="{Binding MaximumChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Button Content="H5" Command="{Binding H5}"  Margin="0,0,0,12"/>
+
+                    <Button Content="Create negative" Command="{Binding CreateNegativeCommand}"  />
 
                     <TextBlock Text="Matrix size:" Margin="0,5" />
 
