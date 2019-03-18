@@ -27,7 +27,7 @@ namespace POID.ImageProcessingApp.Filters
                 index++;
             }
 
-            var center = (int) Math.Ceiling(componentsR.Length / 2f);
+            var center = (int) Math.Floor(componentsR.Length / 2f);
 
             return new Rgb24(
                 componentsR.OrderBy(b => b).ElementAt(center),

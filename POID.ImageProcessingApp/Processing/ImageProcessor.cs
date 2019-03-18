@@ -23,6 +23,16 @@ namespace POID.ImageProcessingApp.Processing
 
         public List<ColumnItem> GenerateHistogram()
         {
+            var histogram = GenerateRawHistogram();
+
+            return histogram
+                .OrderBy(pair => pair.Key)
+                .Select(pair => new ColumnItem(pair.Value, pair.Key))
+                .ToList();
+        }
+
+        private Dictionary<int, int> GenerateRawHistogram()
+        {
             var histogram = new Dictionary<int, int>();
             for (int i = 0; i < _image.Width; i++)
             {
@@ -36,16 +46,13 @@ namespace POID.ImageProcessingApp.Processing
                 }
             }
 
-            for (int i = 0; i < 255; i++)
+            for (int i = 0; i <= 255; i++)
             {
                 if (!histogram.ContainsKey(i))
                     histogram[i] = 0;
             }
 
-            return histogram
-                .OrderBy(pair => pair.Key)
-                .Select(pair => new ColumnItem(pair.Value, pair.Key))
-                .ToList();
+            return histogram;
         }
 
         public Image<Rgb24> CreateNegativeImage()
@@ -126,43 +133,44 @@ namespace POID.ImageProcessingApp.Processing
         public Image<Rgb24> CountDisH5Crap(int min, int max)
         {
             var image = _image.Clone();
+            var histogram = GenerateRawHistogram();
+
+            var modifiedHistogram = new Dictionary<int,double>();
+
+            for (int i = 0; i < 255; i++)
+            {
+                double power = 0;
+
+                for (int j = 0; j < i; j++)
+                {
+                    power += histogram[j];
+                }
+
+                power /= (_image.Width * _image.Height);
+
+                modifiedHistogram[i] = Math.Pow(min * (max / min), power);
+
+            }
 
             for (int i = 0; i < image.Width; i++)
             {
                 for (int j = 0; j < image.Height; j++)
                 {
                     var current = image[i, j];
-
-                    var divider = max / min;
-                    var result = min * divider;
-                    var f = current.R;
-                    var root = 0;
-                    var sum = 0;
-                    for (int k = 0; k <= f; k++)
-                    {
-                        root += k * k;
-                        sum += k ;
-                    }
-
-                    root = root / sum;
-                    var final = Math.Pow(result, root);
-
-                    final = CheckOverflow((float)final);
-                    float CheckOverflow(float val)
-                    {
-                        if (val > 255)
-                            return 255;
-                        if (val < 0)
-                            return 0;
-                        return val;
-                    }
-
-                    current.R = (byte) final;
-
-                    image[i, j] = current;
+                    image[i, j] = new Rgb24(
+                        r: (byte) CheckOverflow(current.R * histogram[current.R]),
+                        g: (byte) CheckOverflow(current.G * histogram[current.G]),
+                        b: (byte) CheckOverflow(current.B * histogram[current.B]));
                 }
             }
-
+            float CheckOverflow(float val)
+            {
+                if (val > 255)
+                    return 255;
+                if (val < 0)
+                    return 0;
+                return val;
+            }
             return image;
         }
 
