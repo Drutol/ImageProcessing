@@ -21,9 +21,9 @@ namespace POID.ImageProcessingApp.Processing
             _image = image;
         }
 
-        public List<ColumnItem> GenerateHistogram()
+        public List<ColumnItem> GenerateHistogram(Func<Rgb24, byte> channelSelector)
         {
-            var histogram = GenerateRawHistogram();
+            var histogram = GenerateRawHistogram(channelSelector);
 
             return histogram
                 .OrderBy(pair => pair.Key)
@@ -31,14 +31,14 @@ namespace POID.ImageProcessingApp.Processing
                 .ToList();
         }
 
-        private Dictionary<int, int> GenerateRawHistogram()
+        private Dictionary<int, int> GenerateRawHistogram(Func<Rgb24, byte> channelSelector)
         {
             var histogram = new Dictionary<int, int>();
             for (int i = 0; i < _image.Width; i++)
             {
                 for (int j = 0; j < _image.Height; j++)
                 {
-                    var val = _image[i, j].B;
+                    var val = channelSelector(_image[i, j]);
                     if (!histogram.ContainsKey(val))
                         histogram[val] = 1;
                     else
@@ -112,9 +112,9 @@ namespace POID.ImageProcessingApp.Processing
                 {
                     var current = image[i, j];
                     image[i, j] = new Rgb24(
-                        r: (byte) CheckOverflow(current.R * value),
-                        g: (byte) CheckOverflow(current.G * value),
-                        b: (byte) CheckOverflow(current.B * value));
+                        r: (byte) CheckOverflow((current.R - 128) * value + 128),
+                        g: (byte) CheckOverflow((current.G - 128) * value + 128),
+                        b: (byte) CheckOverflow((current.B - 128) * value + 128));
 
                     float CheckOverflow(float val)
                     {
@@ -130,40 +130,47 @@ namespace POID.ImageProcessingApp.Processing
             return image;
         }
 
-        public Image<Rgb24> CountDisH5Crap(int min, int max)
+        public Image<Rgb24> CountDisH5Crap(
+            int minR, int maxR,
+            int minG, int maxG,
+            int minB, int maxB)
         {
             var image = _image.Clone();
-            var histogram = GenerateRawHistogram();
+            var histogramR = GenerateRawHistogram(rgb24 => rgb24.R);
+            var histogramG = GenerateRawHistogram(rgb24 => rgb24.G);
+            var histogramB = GenerateRawHistogram(rgb24 => rgb24.B);
 
-            var modifiedHistogram = new Dictionary<int,double>();
+            var size = _image.Width * _image.Height;
 
-            for (int i = 0; i < 255; i++)
-            {
-                double power = 0;
-
-                for (int j = 0; j < i; j++)
-                {
-                    power += histogram[j];
-                }
-
-                power /= (_image.Width * _image.Height);
-
-                modifiedHistogram[i] = Math.Pow(min * (max / min), power);
-
-            }
-
+            var modifierR = minR == 0 ? 0 : (maxR / minR);
+            var modifierG = minG == 0 ? 0 : (maxG / minG);
+            var modifierB = minB == 0 ? 0 : (maxB / minB);
             for (int i = 0; i < image.Width; i++)
             {
                 for (int j = 0; j < image.Height; j++)
                 {
                     var current = image[i, j];
+
                     image[i, j] = new Rgb24(
-                        r: (byte) CheckOverflow(current.R * histogram[current.R]),
-                        g: (byte) CheckOverflow(current.G * histogram[current.G]),
-                        b: (byte) CheckOverflow(current.B * histogram[current.B]));
+                        r: minR == 0 ? current.R : (byte)CheckOverflow(minR * Math.Pow(modifierR, CalculateExponent(histogramR, current.R))),
+                        g: minG == 0 ? current.G : (byte)CheckOverflow(minG * Math.Pow(modifierG, CalculateExponent(histogramG, current.G))),
+                        b: minB == 0 ? current.B : (byte)CheckOverflow(minR * Math.Pow(modifierB, CalculateExponent(histogramB, current.B))));
                 }
             }
-            float CheckOverflow(float val)
+
+            double CalculateExponent(Dictionary<int,int> histogram, byte channelValue)
+            {
+                var sum = 0.0;
+
+                for (int i = 0; i < channelValue; i++)
+                {
+                    sum += histogram[i];
+                }
+
+                return sum / size;
+            }
+
+            double CheckOverflow(double val)
             {
                 if (val > 255)
                     return 255;

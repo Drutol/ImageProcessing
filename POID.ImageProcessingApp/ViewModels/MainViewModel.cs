@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
@@ -31,8 +32,7 @@ namespace POID.ImageProcessingApp.ViewModels
         private List<ColumnItem> _outputImageHistogram;
         private int _brightnessSliderValue;
         private double _contrastSliderValue;
-        private int _minimumChannelSliderValue;
-        private int _maximumChannelSliderValue;
+
         private double[,] _filterMask = new double[,]
         {
             { 1, 1, 1 }, { 1, 1, 1 }, { 1, 1, 1 }
@@ -40,6 +40,18 @@ namespace POID.ImageProcessingApp.ViewModels
 
         private int _selectedMatrixSize = 3;
         private IFilter _selectedFilter;
+        private int _maximumRChannelSliderValue = 255;
+        private int _minimumRChannelSliderValue = 0;
+        private int _minimumGChannelSliderValue = 0;
+        private int _maximumGChannelSliderValue = 255;
+        private int _minimumBChannelSliderValue = 0;
+        private int _maximumBChannelSliderValue = 255;
+        private List<ColumnItem> _inputImageHistogramR;
+        private List<ColumnItem> _inputImageHistogramG;
+        private List<ColumnItem> _inputImageHistogramB;
+        private List<ColumnItem> _outputImageHistogramR;
+        private List<ColumnItem> _outputImageHistogramG;
+        private List<ColumnItem> _outputImageHistogramB;
 
         public List<string> Images { get; set; }
 
@@ -73,22 +85,62 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
-        public List<ColumnItem> InputImageHistogram
+        public List<ColumnItem> InputImageHistogramR
         {
-            get => _inputImageHistogram;
+            get => _inputImageHistogramR;
             set
             {
-                _inputImageHistogram = value;
+                _inputImageHistogramR = value;
                 RaisePropertyChanged();
             }
         }
 
-        public List<ColumnItem> OutputImageHistogram
+        public List<ColumnItem> InputImageHistogramG
         {
-            get => _outputImageHistogram;
+            get => _inputImageHistogramG;
             set
             {
-                _outputImageHistogram = value;
+                _inputImageHistogramG = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public List<ColumnItem> InputImageHistogramB
+        {
+            get => _inputImageHistogramB;
+            set
+            {
+                _inputImageHistogramB = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public List<ColumnItem> OutputImageHistogramR
+        {
+            get => _outputImageHistogramR;
+            set
+            {
+                _outputImageHistogramR = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public List<ColumnItem> OutputImageHistogramG
+        {
+            get => _outputImageHistogramG;
+            set
+            {
+                _outputImageHistogramG = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public List<ColumnItem> OutputImageHistogramB
+        {
+            get => _outputImageHistogramB;
+            set
+            {
+                _outputImageHistogramB = value;
                 RaisePropertyChanged();
             }
         }
@@ -113,25 +165,67 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
-        public int MinimumChannelSliderValue
+        public int MinimumRChannelSliderValue
         {
-            get => _minimumChannelSliderValue;
+            get => _minimumRChannelSliderValue;
             set
             {
-                _minimumChannelSliderValue = value;
+                _minimumRChannelSliderValue = value;
                 RaisePropertyChanged();
             }
         }
 
-        public int MaximumChannelSliderValue
+        public int MaximumRChannelSliderValue
         {
-            get => _maximumChannelSliderValue;
+            get => _maximumRChannelSliderValue;
             set
             {
-                _maximumChannelSliderValue = value;
+                _maximumRChannelSliderValue = value;
                 RaisePropertyChanged();
             }
         }
+
+        public int MinimumGChannelSliderValue
+        {
+            get => _minimumGChannelSliderValue;
+            set
+            {
+                _minimumGChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int MaximumGChannelSliderValue
+        {
+            get => _maximumGChannelSliderValue;
+            set
+            {
+                _maximumGChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int MinimumBChannelSliderValue
+        {
+            get => _minimumBChannelSliderValue;
+            set
+            {
+                _minimumBChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int MaximumBChannelSliderValue
+        {
+            get => _maximumBChannelSliderValue;
+            set
+            {
+                _maximumBChannelSliderValue = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Visibility IsGenericMatrixVisible => SelectedFilter.GetType() == typeof(GenericFilter) ? Visibility.Visible : Visibility.Collapsed;
 
         public double[,] FilterMask
         {
@@ -165,6 +259,7 @@ namespace POID.ImageProcessingApp.ViewModels
             {
                 _selectedFilter = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(() => IsGenericMatrixVisible);
             }
         }
 
@@ -190,7 +285,9 @@ namespace POID.ImageProcessingApp.ViewModels
             InputImageSource = bytes;
             _inputImage = Image.Load<Rgb24>(bytes);
             _inputImageProcessor = new ImageProcessor(_inputImage);
-            InputImageHistogram = _inputImageProcessor.GenerateHistogram().ToList();
+            InputImageHistogramR = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
+            InputImageHistogramG = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
+            InputImageHistogramB = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
         }
 
         private void LoadOutputImage(Image<Rgb24> image)
@@ -203,13 +300,19 @@ namespace POID.ImageProcessingApp.ViewModels
             }
 
             _outputImageProcessor = new ImageProcessor(_outputImage);
-            OutputImageHistogram = _outputImageProcessor.GenerateHistogram();
+            OutputImageHistogramR = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
+            OutputImageHistogramG = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
+            OutputImageHistogramB = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
         }
 
         public RelayCommand H5 => new RelayCommand(() =>
         {
             if (_inputImageProcessor != null)
-                LoadOutputImage(_inputImageProcessor.CountDisH5Crap(MinimumChannelSliderValue, MaximumChannelSliderValue));
+                LoadOutputImage(
+                    _inputImageProcessor.CountDisH5Crap(
+                        MinimumRChannelSliderValue, MaximumRChannelSliderValue,
+                        MinimumGChannelSliderValue, MaximumGChannelSliderValue,
+                        MinimumBChannelSliderValue, MaximumBChannelSliderValue));
         });
 
         public RelayCommand CreateNegativeCommand => new RelayCommand(() =>
