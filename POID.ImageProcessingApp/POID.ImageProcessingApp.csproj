@@ -14,6 +14,8 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -103,6 +105,8 @@
     <Compile Include="Filters\GenericFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
+    <Compile Include="Operations\FourierTransformation.cs" />
+    <Compile Include="Processing\ImageProcessor.2.cs" />
     <Compile Include="Processing\ImageProcessor.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
@@ -187,6 +191,9 @@
     <None Include="Assets\pentagon.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

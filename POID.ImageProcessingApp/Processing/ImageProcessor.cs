@@ -12,14 +12,14 @@ using SixLabors.ImageSharp.Processing;
 
 namespace POID.ImageProcessingApp.Processing
 {
-    public class ImageProcessor
+    public partial class ImageProcessor
     {
-        private readonly Image<Rgb24> _image;
-
         public ImageProcessor(Image<Rgb24> image)
         {
-            _image = image;
+            Image = image;
         }
+
+        public Image<Rgb24> Image { get; set; }
 
         public List<ColumnItem> GenerateHistogram(Func<Rgb24, byte> channelSelector)
         {
@@ -34,11 +34,11 @@ namespace POID.ImageProcessingApp.Processing
         private Dictionary<int, int> GenerateRawHistogram(Func<Rgb24, byte> channelSelector)
         {
             var histogram = new Dictionary<int, int>();
-            for (int i = 0; i < _image.Width; i++)
+            for (int i = 0; i < Image.Width; i++)
             {
-                for (int j = 0; j < _image.Height; j++)
+                for (int j = 0; j < Image.Height; j++)
                 {
-                    var val = channelSelector(_image[i, j]);
+                    var val = channelSelector(Image[i, j]);
                     if (!histogram.ContainsKey(val))
                         histogram[val] = 1;
                     else
@@ -57,7 +57,7 @@ namespace POID.ImageProcessingApp.Processing
 
         public Image<Rgb24> CreateNegativeImage()
         {
-            var image = _image.Clone();
+            var image = Image.Clone();
 
             for (int i = 0; i < image.Width; i++)
             {
@@ -76,7 +76,7 @@ namespace POID.ImageProcessingApp.Processing
 
         public Image<Rgb24> AdjustBrightness(int value)
         {
-            var image = _image.Clone();
+            var image = Image.Clone();
 
             for (int i = 0; i < image.Width; i++)
             {
@@ -104,7 +104,7 @@ namespace POID.ImageProcessingApp.Processing
 
         public Image<Rgb24> AdjustContrast(float value)
         {
-            var image = _image.Clone();
+            var image = Image.Clone();
 
             for (int i = 0; i < image.Width; i++)
             {
@@ -135,12 +135,12 @@ namespace POID.ImageProcessingApp.Processing
             int minG, int maxG,
             int minB, int maxB)
         {
-            var image = _image.Clone();
+            var image = Image.Clone();
             var histogramR = GenerateRawHistogram(rgb24 => rgb24.R);
             var histogramG = GenerateRawHistogram(rgb24 => rgb24.G);
             var histogramB = GenerateRawHistogram(rgb24 => rgb24.B);
 
-            var size = _image.Width * _image.Height;
+            var size = Image.Width * Image.Height;
 
             var modifierR = minR == 0 ? 0 : (maxR / minR);
             var modifierG = minG == 0 ? 0 : (maxG / minG);
@@ -183,13 +183,13 @@ namespace POID.ImageProcessingApp.Processing
 
         public Image<Rgb24> ApplyFilter(double[,] filterMask, int matrixSize, IFilter filter)
         {
-            var image = _image.Clone();
+            var image = Image.Clone();
 
             var margin = (int) Math.Floor(matrixSize / 2f);
 
             for (int i = margin; i < image.Width - margin; i++)
                 for (int j = margin; j < image.Height - margin; j++)
-                    image[i, j] = filter.Compute(GetNeighbourhood(_image, i, j, margin, matrixSize), filterMask, matrixSize);
+                    image[i, j] = filter.Compute(GetNeighbourhood(Image, i, j, margin, matrixSize), filterMask, matrixSize);
 
             return image;
         }

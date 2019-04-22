@@ -52,6 +52,11 @@ namespace POID.ImageProcessingApp.ViewModels
         private List<ColumnItem> _outputImageHistogramR;
         private List<ColumnItem> _outputImageHistogramG;
         private List<ColumnItem> _outputImageHistogramB;
+        private bool? _isLowpassFilter;
+        private int _innerFilterRadius;
+        private int _outerFilterRadius;
+        private double _logscale = 1646;
+        private double _logOffset = 15;
 
         public List<string> Images { get; set; }
 
@@ -225,6 +230,56 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public bool? IsLowpassFilter
+        {
+            get => _isLowpassFilter;
+            set
+            {
+                _isLowpassFilter = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OuterFilterRadius
+        {
+            get => _outerFilterRadius;
+            set
+            {
+                _outerFilterRadius = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int InnerFilterRadius
+        {
+            get => _innerFilterRadius;
+            set
+            {
+                _innerFilterRadius = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public double Logscale
+        {
+            get => _logscale;
+            set
+            {
+                _logscale = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public double LogOffset
+        {
+            get => _logOffset;
+            set
+            {
+                _logOffset = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public Visibility IsGenericMatrixVisible => SelectedFilter.GetType() == typeof(GenericFilter) ? Visibility.Visible : Visibility.Collapsed;
 
         public double[,] FilterMask
@@ -279,12 +334,27 @@ namespace POID.ImageProcessingApp.ViewModels
             SelectedFilter = AvailableFilter.First();
         }
 
-        private void LoadInputImage()
+        private void LoadInputImage(ImageProcessor processor = null)
         {
-            var bytes = File.ReadAllBytes(SelectedImage);
-            InputImageSource = bytes;
-            _inputImage = Image.Load<Rgb24>(bytes);
-            _inputImageProcessor = new ImageProcessor(_inputImage);
+            if (processor == null)
+            {
+                byte[] image = File.ReadAllBytes(SelectedImage);
+                InputImageSource = image;
+                _inputImage = Image.Load<Rgb24>(image);
+                _inputImageProcessor = new ImageProcessor(_inputImage);
+            }
+            else
+            {
+                _inputImage = processor.Image;
+                using (var ms = new MemoryStream())
+                {
+                    _inputImage.SaveAsPng(ms);
+                    InputImageSource = ms.ToArray();
+                }
+
+                _inputImageProcessor = processor;
+            }
+            
             InputImageHistogramR = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
             InputImageHistogramG = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
             InputImageHistogramB = _inputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
@@ -300,6 +370,21 @@ namespace POID.ImageProcessingApp.ViewModels
             }
 
             _outputImageProcessor = new ImageProcessor(_outputImage);
+            OutputImageHistogramR = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
+            OutputImageHistogramG = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
+            OutputImageHistogramB = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
+        }
+
+        private void LoadOutputImage(ImageProcessor imageProcessor)
+        {
+            _outputImage = imageProcessor.Image;
+            using (var ms = new MemoryStream())
+            {
+                _outputImage.SaveAsPng(ms);
+                OutputImageSource = ms.ToArray();
+            }
+
+            _outputImageProcessor = imageProcessor;
             OutputImageHistogramR = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
             OutputImageHistogramG = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
             OutputImageHistogramB = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
@@ -338,6 +423,48 @@ namespace POID.ImageProcessingApp.ViewModels
             if (_inputImageProcessor != null)
                 LoadOutputImage(_inputImageProcessor.ApplyFilter(FilterMask, SelectedMatrixSize, SelectedFilter));
         });
+
+        public RelayCommand DoFourierCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor != null)
+                LoadOutputImage(_inputImageProcessor.GetFourierTransformedImages(Logscale, LogOffset));
+        });
+
+        public RelayCommand CopyOutputToInputCommand => new RelayCommand(() =>
+        {
+            LoadInputImage(_outputImageProcessor);
+        });
+
+        public RelayCommand FlipImageCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor != null)
+                LoadOutputImage(_inputImageProcessor.FlipImage());
+        });
+
+        public RelayCommand ReverseFourierCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor?.TransformedSignal != null)
+                LoadOutputImage(_inputImageProcessor.ReverseFourierTransform());
+        });
+
+        public RelayCommand FilterFourierCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor?.TransformedSignal != null)
+                LoadOutputImage(_inputImageProcessor.FilterFourier(InnerFilterRadius, OuterFilterRadius, IsLowpassFilter, Logscale, LogOffset));
+        });
+
+        public RelayCommand<string> SetFourierFilterCommand => new RelayCommand<string>(s =>
+        {
+            if (s == "1")
+                IsLowpassFilter = true;
+            else if (s == "2")
+                IsLowpassFilter = false;
+            else
+            {
+                IsLowpassFilter = null;
+            }
+        });
+
 
     }
 }
