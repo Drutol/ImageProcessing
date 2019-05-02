@@ -195,6 +195,24 @@
                                     Value="{Binding OuterFilterRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                             <Button Content="Filter" Margin="0,10,0,0" Command="{Binding FilterFourierCommand}"/>
+
+                            
+
+                            <TextBlock Margin="0,32,0,0">
+                                <Run Text="K: " />
+                                <Run Text="{Binding PhaseK, StringFormat=N3}" />
+                            </TextBlock>
+                            <Slider Minimum="-20" Maximum="20" Margin="5" 
+                                    Value="{Binding PhaseK, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock>
+                                <Run Text="L: " />
+                                <Run Text="{Binding PhaseL, StringFormat=N3}" />
+                            </TextBlock>
+                            <Slider Minimum="-20" Maximum="20" Margin="5" 
+                                    Value="{Binding PhaseL, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <Button Content="Filter" Margin="0,10,0,0" Command="{Binding PhaseFilterCommand}"/>
                         </StackPanel>
                     </Grid>
                 </TabItem>
@@ -208,7 +226,15 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Image Grid.Row="0" Margin="20" Source="{Binding InputImageSource}" />
+            <TabControl>
+                <TabItem Header="Frequency">
+                    <Image Margin="20" Source="{Binding InputImageSource}" />
+                </TabItem>   
+                <TabItem Header="Phase">
+                    <Image Margin="20" Source="{Binding InputImageSourcePhase}" />
+                </TabItem>
+            </TabControl>
+
 
             <TabControl Grid.Row="1">
                 <TabItem Header="R">
@@ -261,7 +287,14 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Image Grid.Row="0" Margin="20" Source="{Binding OutputImageSource}" />
+            <TabControl>
+                <TabItem Header="Frequency">
+                    <Image Margin="20" Source="{Binding OutputImageSource}" />
+                </TabItem>
+                <TabItem Header="Phase">
+                    <Image Margin="20" Source="{Binding OutputImageSourcePhase}" />
+                </TabItem>
+            </TabControl>
 
 
             <TabControl Grid.Row="1">

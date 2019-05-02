@@ -46,6 +46,7 @@ namespace POID.ImageProcessingApp.Processing
             ComplexToImages(copy, signal, realImage, imaginaryImage);
 
             Normalize(realImage, normalizationScale, logoffset);
+            Normalize(imaginaryImage, normalizationScale, logoffset);
 
             return new ImageProcessor(CreateImage(realImage), CreateImage(imaginaryImage), copy);
         }
@@ -228,9 +229,38 @@ namespace POID.ImageProcessingApp.Processing
             ComplexToImages(copy, flipped, realImage, imaginaryImage);
 
             Normalize(realImage, logscale, logoffset);
+            Normalize(imaginaryImage, logscale, logoffset);
 
             return new ImageProcessor(CreateImage(realImage), CreateImage(imaginaryImage), copy);
 
+        }
+
+        public ImageProcessor FilterPhase(double logscale, double logOffset, double l, double k)
+        {
+            var signal = new Complex[Image.Width, Image.Height];
+
+            for (int i = 0; i < Image.Width; i++)
+            {
+                for (int j = 0; j < Image.Height; j++)
+                {
+                    signal[i,j] += new Complex(TransformedSignal[i, j].Real, 
+                        Math.Exp(TransformedSignal[i,j].Imaginary * (
+                                     ((-i*k * Math.PI * 2)/ Image.Width) +
+                                     ((-j*l * Math.PI * 2)/ Image.Height) +
+                                     (k + l) * Math.PI)));
+                }
+            }
+
+            var realImage = new double[Image.Width, Image.Height];
+            var imaginaryImage = new double[Image.Width, Image.Height];
+            var copy = new Complex[Image.Width, Image.Height];
+
+            ComplexToImages(copy, signal, realImage, imaginaryImage);
+
+            Normalize(realImage, logscale, logOffset);
+            Normalize(imaginaryImage, logscale, logOffset);
+
+            return new ImageProcessor(CreateImage(realImage), CreateImage(imaginaryImage), copy);
         }
     }
 }

@@ -57,6 +57,12 @@ namespace POID.ImageProcessingApp.ViewModels
         private int _outerFilterRadius;
         private double _logscale = 1646;
         private double _logOffset = 15;
+        private byte[] _inputImageSourcePhase;
+        private byte[] _outputImageSourcePhase;
+        private Image<Rgb24> _outputImagePhase;
+        private Image<Rgb24> _inputImagePhase;
+        private double _phaseL;
+        private double _phaseK;
 
         public List<string> Images { get; set; }
 
@@ -76,6 +82,26 @@ namespace POID.ImageProcessingApp.ViewModels
             set
             {
                 _outputImageSource = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public byte[] OutputImageSourcePhase
+        {
+            get => _outputImageSourcePhase;
+            set
+            {
+                _outputImageSourcePhase = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public byte[] InputImageSourcePhase
+        {
+            get => _inputImageSourcePhase;
+            set
+            {
+                _inputImageSourcePhase = value;
                 RaisePropertyChanged();
             }
         }
@@ -280,6 +306,26 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public double PhaseK
+        {
+            get => _phaseK;
+            set
+            {
+                _phaseK = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public double PhaseL
+        {
+            get => _phaseL;
+            set
+            {
+                _phaseL = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public Visibility IsGenericMatrixVisible => SelectedFilter.GetType() == typeof(GenericFilter) ? Visibility.Visible : Visibility.Collapsed;
 
         public double[,] FilterMask
@@ -342,15 +388,34 @@ namespace POID.ImageProcessingApp.ViewModels
                 InputImageSource = image;
                 _inputImage = Image.Load<Rgb24>(image);
                 _inputImageProcessor = new ImageProcessor(_inputImage);
+
+                InputImageSourcePhase = null;
             }
             else
             {
                 _inputImage = processor.Image;
+                _inputImagePhase = processor.ImaginaryImage;
+
                 using (var ms = new MemoryStream())
                 {
                     _inputImage.SaveAsPng(ms);
                     InputImageSource = ms.ToArray();
                 }
+
+                if (_inputImagePhase != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        _inputImagePhase.SaveAsPng(ms);
+                        InputImageSourcePhase = ms.ToArray();
+                    }
+
+                }
+                else
+                {
+                    InputImageSourcePhase = null;
+                }
+
 
                 _inputImageProcessor = processor;
             }
@@ -369,6 +434,8 @@ namespace POID.ImageProcessingApp.ViewModels
                 OutputImageSource = ms.ToArray();
             }
 
+            OutputImageSourcePhase = null;
+
             _outputImageProcessor = new ImageProcessor(_outputImage);
             OutputImageHistogramR = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
             OutputImageHistogramG = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
@@ -378,10 +445,24 @@ namespace POID.ImageProcessingApp.ViewModels
         private void LoadOutputImage(ImageProcessor imageProcessor)
         {
             _outputImage = imageProcessor.Image;
+            _outputImagePhase = imageProcessor.ImaginaryImage;
             using (var ms = new MemoryStream())
             {
                 _outputImage.SaveAsPng(ms);
                 OutputImageSource = ms.ToArray();
+            }
+
+            if (_outputImagePhase != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    _outputImagePhase.SaveAsPng(ms);
+                    OutputImageSourcePhase = ms.ToArray();
+                }
+            }
+            else
+            {
+                OutputImageSourcePhase = null;
             }
 
             _outputImageProcessor = imageProcessor;
@@ -451,6 +532,12 @@ namespace POID.ImageProcessingApp.ViewModels
         {
             if (_inputImageProcessor?.TransformedSignal != null)
                 LoadOutputImage(_inputImageProcessor.FilterFourier(InnerFilterRadius, OuterFilterRadius, IsLowpassFilter, Logscale, LogOffset));
+        });
+
+        public RelayCommand PhaseFilterCommand => new RelayCommand(() =>
+        {
+            if (_inputImageProcessor?.TransformedSignal != null)
+                LoadOutputImage(_inputImageProcessor.FilterPhase(Logscale, LogOffset, PhaseL, PhaseK));
         });
 
         public RelayCommand<string> SetFourierFilterCommand => new RelayCommand<string>(s =>
