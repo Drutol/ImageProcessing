@@ -213,6 +213,29 @@
                                     Value="{Binding PhaseL, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                             <Button Content="Filter" Margin="0,10,0,0" Command="{Binding PhaseFilterCommand}"/>
+
+                            <TextBlock Margin="0,32,0,0">
+                                <Run Text="Clusters: " />
+                                <Run Text="{Binding ClustersCount, StringFormat=N3}" />
+                            </TextBlock>
+                            <Slider Minimum="1" Maximum="12" Margin="5" 
+                                    Value="{Binding ClustersCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <Button Content="Segmentation" Margin="0,10,0,0" Command="{Binding SegmentateCommand}"/>
+
+                            <ListView ItemsSource="{Binding ClusterEntries}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding Display, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                            <CheckBox.Content>
+                                                <TextBlock>
+                                                    Cluster #<Run Text="{Binding Label}" Foreground="{Binding Colour}"/>
+                                                </TextBlock>
+                                            </CheckBox.Content>
+                                        </CheckBox>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
                         </StackPanel>
                     </Grid>
                 </TabItem>

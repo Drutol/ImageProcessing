@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using OxyPlot.Series;
 using POID.ImageProcessingApp.Filters;
+using POID.ImageProcessingApp.Models;
 using POID.ImageProcessingApp.Processing;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
@@ -63,6 +65,8 @@ namespace POID.ImageProcessingApp.ViewModels
         private Image<Rgb24> _inputImagePhase;
         private double _phaseL;
         private double _phaseK;
+        private ObservableCollection<ClusterEntry> _clusterEntries;
+        private int _clustersCount = 1;
 
         public List<string> Images { get; set; }
 
@@ -374,6 +378,26 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public ObservableCollection<ClusterEntry> ClusterEntries
+        {
+            get => _clusterEntries;
+            set
+            {
+                _clusterEntries = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int ClustersCount
+        {
+            get => _clustersCount;
+            set
+            {
+                _clustersCount = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public MainViewModel()
         {
             Images = Directory.GetFiles("Assets").ToList();
@@ -465,10 +489,51 @@ namespace POID.ImageProcessingApp.ViewModels
                 OutputImageSourcePhase = null;
             }
 
+      
+            if (imageProcessor.CountOfClusters > 0)
+            {
+                if (ClusterEntries == null || (ClusterEntries != null && ClusterEntries.Count != imageProcessor.CountOfClusters))
+                {
+                    ClusterEntries = new ObservableCollection<ClusterEntry>();
+                    for (int i = 0; i < imageProcessor.CountOfClusters; i++)
+                    {
+                        var entry = new ClusterEntry
+                        {
+                            Colour = new Color
+                            {
+                                R = imageProcessor.Colours[i].R,
+                                G = imageProcessor.Colours[i].G,
+                                B = imageProcessor.Colours[i].B,
+                            },
+                            Display = false,
+                            Label = i
+                        };
+
+                        ClusterEntries.Add(entry);
+
+                        entry.CheckedChanged += EntryOnCheckedChanged;
+                    }
+
+                }
+            }
+            else
+            {
+                ClusterEntries = new ObservableCollection<ClusterEntry>();
+            }
+
             _outputImageProcessor = imageProcessor;
             OutputImageHistogramR = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.R);
             OutputImageHistogramG = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.G);
             OutputImageHistogramB = _outputImageProcessor.GenerateHistogram(rgb24 => rgb24.B);
+        }
+
+        private void EntryOnCheckedChanged(object sender, bool e)
+        {
+            LoadOutputImage(new ImageProcessor(
+                _outputImageProcessor.Clusters,
+                _outputImageProcessor.CountOfClusters,
+                _outputImageProcessor.OriginalImageUsedForSegmentation,
+                ClusterEntries.Where(entry => entry.Display).Select(entry => entry.Label).ToList()));
         }
 
         public RelayCommand H5 => new RelayCommand(() =>
@@ -538,6 +603,11 @@ namespace POID.ImageProcessingApp.ViewModels
         {
             if (_inputImageProcessor?.TransformedSignal != null)
                 LoadOutputImage(_inputImageProcessor.FilterPhase(Logscale, LogOffset, PhaseL, PhaseK));
+        });
+
+        public RelayCommand SegmentateCommand => new RelayCommand(() =>
+        {
+            LoadOutputImage(_inputImageProcessor.PerformSegmentation(ClustersCount));
         });
 
         public RelayCommand<string> SetFourierFilterCommand => new RelayCommand<string>(s =>

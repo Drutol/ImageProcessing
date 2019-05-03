@@ -105,9 +105,11 @@
     <Compile Include="Filters\GenericFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
+    <Compile Include="Models\ClusterEntry.cs" />
     <Compile Include="Operations\FourierTransformation.cs" />
-    <Compile Include="Processing\ImageProcessor.2.cs" />
+    <Compile Include="Processing\ImageProcessor.fourier.cs" />
     <Compile Include="Processing\ImageProcessor.cs" />
+    <Compile Include="Processing\ImageProcessor.segmentation.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -192,8 +194,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
