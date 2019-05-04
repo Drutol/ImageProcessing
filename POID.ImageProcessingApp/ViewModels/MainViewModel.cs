@@ -67,6 +67,7 @@ namespace POID.ImageProcessingApp.ViewModels
         private double _phaseK;
         private ObservableCollection<ClusterEntry> _clusterEntries;
         private int _clustersCount = 1;
+        private int _growingThreshold = 20;
 
         public List<string> Images { get; set; }
 
@@ -398,6 +399,17 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public int GrowingThreshold
+        {
+            get => _growingThreshold;
+            set
+            {
+                _growingThreshold = value;
+                RaisePropertyChanged();
+            }
+        }
+
+
         public MainViewModel()
         {
             Images = Directory.GetFiles("Assets").ToList();
@@ -492,10 +504,10 @@ namespace POID.ImageProcessingApp.ViewModels
       
             if (imageProcessor.CountOfClusters > 0)
             {
-                if (ClusterEntries == null || (ClusterEntries != null && ClusterEntries.Count != imageProcessor.CountOfClusters))
+                if (ClusterEntries == null || (ClusterEntries != null && ClusterEntries.Count != Math.Min(imageProcessor.CountOfClusters, imageProcessor.Colours.Length)))
                 {
                     ClusterEntries = new ObservableCollection<ClusterEntry>();
-                    for (int i = 0; i < imageProcessor.CountOfClusters; i++)
+                    for (int i = 0; i < Math.Min(imageProcessor.CountOfClusters, imageProcessor.Colours.Length); i++)
                     {
                         var entry = new ClusterEntry
                         {
@@ -533,7 +545,8 @@ namespace POID.ImageProcessingApp.ViewModels
                 _outputImageProcessor.Clusters,
                 _outputImageProcessor.CountOfClusters,
                 _outputImageProcessor.OriginalImageUsedForSegmentation,
-                ClusterEntries.Where(entry => entry.Display).Select(entry => entry.Label).ToList()));
+                ClusterEntries.Where(entry => entry.Display).Select(entry => entry.Label).ToList(),
+                _outputImageProcessor.Labels));
         }
 
         public RelayCommand H5 => new RelayCommand(() =>
@@ -608,6 +621,11 @@ namespace POID.ImageProcessingApp.ViewModels
         public RelayCommand SegmentateCommand => new RelayCommand(() =>
         {
             LoadOutputImage(_inputImageProcessor.PerformSegmentation(ClustersCount));
+        });
+
+        public RelayCommand GrowingSegmentationCommand => new RelayCommand(() =>
+        {
+            LoadOutputImage(_inputImageProcessor.PerformGrowingSegmentation(GrowingThreshold));
         });
 
         public RelayCommand<string> SetFourierFilterCommand => new RelayCommand<string>(s =>
