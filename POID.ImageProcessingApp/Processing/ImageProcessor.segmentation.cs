@@ -1,50 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace POID.ImageProcessingApp.Processing
 {
     public partial class ImageProcessor
     {
-        public int CountOfClusters { get; set; }
-        public List<int> Labels { get; set; }
-        public int[] Clusters { get; set; }
-        public Image<Rgb24> OriginalImageUsedForSegmentation { get; set; }
-
-        public Rgb24[] Colours { get; } = new[]
-       {
-           ColourToRgb(Colors.Aqua),
-           ColourToRgb(Colors.BlueViolet),
-           ColourToRgb(Colors.Coral),
-           ColourToRgb(Colors.LawnGreen),
-           ColourToRgb(Colors.Gold),
-           ColourToRgb(Colors.Lavender),
-           ColourToRgb(Colors.LimeGreen),
-           ColourToRgb(Colors.LightCyan),
-           ColourToRgb(Colors.DeepSkyBlue),
-           ColourToRgb(Colors.DeepPink),
-           ColourToRgb(Colors.Red),
-           ColourToRgb(Colors.DarkGoldenrod),
-           ColourToRgb(Colors.DarkOrange),
-           ColourToRgb(Colors.DarkSalmon),
-           ColourToRgb(Colors.Purple),
-           ColourToRgb(Colors.Yellow),
-           ColourToRgb(Colors.AliceBlue),
-           ColourToRgb(Colors.Navy),
-           ColourToRgb(Colors.LightGoldenrodYellow),
-           ColourToRgb(Colors.Tomato),
-           ColourToRgb(Colors.IndianRed),
-           ColourToRgb(Colors.Cyan),
-           ColourToRgb(Colors.Khaki),
-           ColourToRgb(Colors.Plum),
-       };
-
         public ImageProcessor(int[] meansClusters, int labelsCount, Image<Rgb24> originalImage, List<int> labelsToDraw,
             List<int> toList)
         {
@@ -55,22 +19,53 @@ namespace POID.ImageProcessingApp.Processing
             Clusters = meansClusters;
         }
 
+        public int CountOfClusters { get; set; }
+        public List<int> Labels { get; set; }
+        public int[] Clusters { get; set; }
+        public Image<Rgb24> OriginalImageUsedForSegmentation { get; set; }
+
+        public Rgb24[] Colours { get; } =
+        {
+            ColourToRgb(Colors.Aqua),
+            ColourToRgb(Colors.BlueViolet),
+            ColourToRgb(Colors.Coral),
+            ColourToRgb(Colors.LawnGreen),
+            ColourToRgb(Colors.Gold),
+            ColourToRgb(Colors.Lavender),
+            ColourToRgb(Colors.LimeGreen),
+            ColourToRgb(Colors.LightCyan),
+            ColourToRgb(Colors.DeepSkyBlue),
+            ColourToRgb(Colors.DeepPink),
+            ColourToRgb(Colors.Red),
+            ColourToRgb(Colors.DarkGoldenrod),
+            ColourToRgb(Colors.DarkOrange),
+            ColourToRgb(Colors.DarkSalmon),
+            ColourToRgb(Colors.Purple),
+            ColourToRgb(Colors.Yellow),
+            ColourToRgb(Colors.AliceBlue),
+            ColourToRgb(Colors.Navy),
+            ColourToRgb(Colors.LightGoldenrodYellow),
+            ColourToRgb(Colors.Tomato),
+            ColourToRgb(Colors.IndianRed),
+            ColourToRgb(Colors.Cyan),
+            ColourToRgb(Colors.Khaki),
+            ColourToRgb(Colors.Plum)
+        };
+
         public ImageProcessor PerformSegmentation(int clusters)
         {
             var reshapedImage = new double[Image.Width * Image.Height][];
 
-            int index = 0;
-            for (int i = 0; i < Image.Width; i++)
+            var index = 0;
+            for (var i = 0; i < Image.Width; i++)
+            for (var j = 0; j < Image.Height; j++)
             {
-                for (int j = 0; j < Image.Height; j++)
-                {
-                    reshapedImage[index] = new double[3];
-                    reshapedImage[index][0] = Image[i, j].R;
-                    reshapedImage[index][1] = Image[i, j].G;
-                    reshapedImage[index][2] = Image[i, j].B;
+                reshapedImage[index] = new double[3];
+                reshapedImage[index][0] = Image[i, j].R;
+                reshapedImage[index][1] = Image[i, j].G;
+                reshapedImage[index][2] = Image[i, j].B;
 
-                    index++;
-                }          
+                index++;
             }
 
             var meanClusters = Cluster(reshapedImage, clusters);
@@ -81,17 +76,15 @@ namespace POID.ImageProcessingApp.Processing
         public ImageProcessor PerformGrowingSegmentation(int threshold)
         {
             var clusters = new int[Image.Width, Image.Height];
-            int currentTag = 1;
+            var currentTag = 1;
             var seeds = ProcessFromSeedPoint(0, 0, clusters, threshold, currentTag++);
 
             while (seeds.Any())
             {
                 var newSeeds = new List<(int X, int Y)>();
                 foreach (var valueTuple in seeds)
-                {
                     newSeeds.AddRange(ProcessFromSeedPoint(valueTuple.X, valueTuple.Y, clusters, threshold,
                         currentTag++));
-                }
 
                 newSeeds = newSeeds.Distinct().ToList();
                 seeds = newSeeds.ToArray();
@@ -100,18 +93,16 @@ namespace POID.ImageProcessingApp.Processing
             var reshapedCluster = new int[Image.Width * Image.Height];
 
             var set = new Dictionary<int, int>();
-            int index = 0;
-            for (int i = 0; i < Image.Width; i++)
+            var index = 0;
+            for (var i = 0; i < Image.Width; i++)
+            for (var j = 0; j < Image.Height; j++)
             {
-                for (int j = 0; j < Image.Height; j++)
-                {
-                    if (!set.ContainsKey(clusters[i, j]))
-                        set[clusters[i, j]] = 0;
+                if (!set.ContainsKey(clusters[i, j]))
+                    set[clusters[i, j]] = 0;
 
-                    set[clusters[i, j]]++;
+                set[clusters[i, j]]++;
 
-                    reshapedCluster[index++] = clusters[i, j];
-                }
+                reshapedCluster[index++] = clusters[i, j];
             }
 
             return new ImageProcessor(reshapedCluster,
@@ -130,7 +121,6 @@ namespace POID.ImageProcessingApp.Processing
             //find horizontal line
             int horizontalStart = x, horizontalEnd = x;
             while (horizontalStart > 0)
-            {
                 if (Math.Abs(Image[x, y].R - Image[horizontalStart - 1, y].R) < threshold)
                 {
                     //clusters[horizontalStart, y] = tag;
@@ -138,17 +128,12 @@ namespace POID.ImageProcessingApp.Processing
                 }
                 else
                 {
-                    if (horizontalStart != x)
-                    {
-                        newSeeds.Add((horizontalStart - 1, y));
-                    }
+                    if (horizontalStart != x) newSeeds.Add((horizontalStart - 1, y));
 
                     break;
                 }
-            }
 
             while (horizontalEnd < Image.Width - 1)
-            {
                 if (Math.Abs(Image[x, y].R - Image[horizontalEnd + 1, y].R) < threshold)
                 {
                     //clusters[horizontalEnd, y] = tag;
@@ -156,56 +141,41 @@ namespace POID.ImageProcessingApp.Processing
                 }
                 else
                 {
-                    if (horizontalEnd != x)
-                    {
-                        newSeeds.Add((horizontalEnd + 1, y));
-                    }
+                    if (horizontalEnd != x) newSeeds.Add((horizontalEnd + 1, y));
                     break;
                 }
-            }
 
             //now go up and down from every point on this line
-            for (int i = horizontalStart; i <= horizontalEnd; i++)
+            for (var i = horizontalStart; i <= horizontalEnd; i++)
             {
                 var currentY = y;
                 //go up
                 while (currentY > 0)
-                {
                     if (Math.Abs(Image[x, y].R - Image[i, currentY - 1].R) < threshold)
                     {
                         if (clusters[i, currentY] == 0)
-                        {
                             clusters[i, currentY] = tag;
-                        }
                         else
-                        {
                             break;
-                        }
 
                         currentY--;
                     }
                     else
                     {
-                        if(currentY != y)
+                        if (currentY != y)
                             newSeeds.Add((i, currentY - 1));
                         break;
                     }
-                }
 
                 currentY = y;
                 //go down
                 while (currentY < Image.Height - 1)
-                {
                     if (Math.Abs(Image[x, y].R - Image[i, currentY + 1].R) < threshold && clusters[i, currentY] == 0)
                     {
                         if (clusters[i, currentY] == 0)
-                        {
                             clusters[i, currentY] = tag;
-                        }
                         else
-                        {
                             break;
-                        }
                         currentY++;
                     }
                     else
@@ -214,32 +184,25 @@ namespace POID.ImageProcessingApp.Processing
                             newSeeds.Add((i, currentY + 1));
                         break;
                     }
-                }
             }
 
 
             //now the same for vertical line
             int verticalStart = y, verticalEnd = y;
             while (verticalStart > 0)
-            {
-                if (Math.Abs(Image[x, y].R - Image[x, verticalStart - 1].R) < threshold )
+                if (Math.Abs(Image[x, y].R - Image[x, verticalStart - 1].R) < threshold)
                 {
                     //clusters[x, verticalStart] = tag;
                     verticalStart--;
                 }
                 else
                 {
-                    if (verticalStart != y)
-                    {
-                        newSeeds.Add((x, verticalStart - 1));
-                    }
+                    if (verticalStart != y) newSeeds.Add((x, verticalStart - 1));
 
                     break;
                 }
-            }
 
             while (verticalEnd < Image.Height - 1)
-            {
                 if (Math.Abs(Image[x, y].R - Image[x, verticalEnd + 1].R) < threshold)
                 {
                     //clusters[x, verticalEnd] = tag;
@@ -247,31 +210,22 @@ namespace POID.ImageProcessingApp.Processing
                 }
                 else
                 {
-                    if (verticalEnd != y)
-                    {
-                        newSeeds.Add((x, verticalEnd + 1));
-                    }
+                    if (verticalEnd != y) newSeeds.Add((x, verticalEnd + 1));
                     break;
                 }
-            }
 
             //now go left and right from every point on this line
-            for (int i = verticalStart; i <= verticalEnd; i++)
+            for (var i = verticalStart; i <= verticalEnd; i++)
             {
                 var currentX = x;
                 //go left
                 while (currentX > 0)
-                {
                     if (Math.Abs(Image[x, y].R - Image[currentX - 1, i].R) < threshold)
                     {
                         if (clusters[currentX, i] == 0)
-                        {
                             clusters[currentX, i] = tag;
-                        }
                         else
-                        {
                             break;
-                        }
                         currentX--;
                     }
                     else
@@ -280,22 +234,16 @@ namespace POID.ImageProcessingApp.Processing
                             newSeeds.Add((currentX - 1, i));
                         break;
                     }
-                }
 
                 currentX = x;
                 //go down
                 while (currentX < Image.Width - 1)
-                {
                     if (Math.Abs(Image[x, y].R - Image[currentX + 1, i].R) < threshold)
                     {
                         if (clusters[currentX, i] == 0)
-                        {
                             clusters[currentX, i] = tag;
-                        }
                         else
-                        {
                             break;
-                        }
 
                         currentX++;
                     }
@@ -305,10 +253,9 @@ namespace POID.ImageProcessingApp.Processing
                             newSeeds.Add((currentX + 1, i));
                         break;
                     }
-                }
             }
 
-            return newSeeds.ToArray();       
+            return newSeeds.ToArray();
         }
 
         private Image<Rgb24> ImageFromClusters(int[] meanClusters, Image<Rgb24> original, List<int> labelsToDraw)
@@ -317,20 +264,14 @@ namespace POID.ImageProcessingApp.Processing
 
             labelsToDraw = labelsToDraw?.Select(i => Labels[i]).ToList();
 
-            for (int i = 0; i < original.Width; i++)
+            for (var i = 0; i < original.Width; i++)
+            for (var j = 0; j < original.Height; j++)
             {
-                for (int j = 0; j < original.Height; j++)
-                {
-                    var value = meanClusters[i * original.Width + j];
-                    if (labelsToDraw?.Contains(value) ?? false)
-                    {
-                        image[i, j] = Colours[Labels.IndexOf(value)];
-                    }
-                    else
-                    {
-                        image[i, j] = original[i, j];
-                    }
-                }
+                var value = meanClusters[i * original.Width + j];
+                if (labelsToDraw?.Contains(value) ?? false)
+                    image[i, j] = Colours[Labels.IndexOf(value)];
+                else
+                    image[i, j] = original[i, j];
             }
 
             return image;
@@ -338,106 +279,134 @@ namespace POID.ImageProcessingApp.Processing
 
         public static int[] Cluster(double[][] data, int numClusters)
         {
-            bool changed = true; bool success = true;
-            int[] clustering = InitClustering(data.Length, numClusters, 0);
-            double[][] means = Allocate(numClusters, data[0].Length);
-            int maxCount = data.Length * 10;
-            int ct = 0;
-            while (changed == true && success == true && ct < maxCount)
+            var changed = true;
+            var success = true;
+            var clustering = InitClustering(data.Length, numClusters, 0);
+            var means = Allocate(numClusters, data[0].Length);
+            var maxCount = data.Length * 10;
+            var ct = 0;
+            while (changed && success && ct < maxCount)
             {
                 ++ct;
                 success = UpdateMeans(data, clustering, means);
                 changed = UpdateClustering(data, clustering, means);
             }
+
             return clustering;
         }
 
         private static int[] InitClustering(int numTuples, int numClusters, int seed)
         {
-            Random random = new Random(seed);
-            int[] clustering = new int[numTuples];
-            for (int i = 0; i < numClusters; ++i)
+            var random = new Random(seed);
+            var clustering = new int[numTuples];
+            for (var i = 0; i < numClusters; ++i)
+            {
                 clustering[i] = i;
-            for (int i = numClusters; i < clustering.Length; ++i)
+            }
+            for (var i = numClusters; i < clustering.Length; ++i)
+            {
                 clustering[i] = random.Next(0, numClusters);
+            }
             return clustering;
         }
 
         private static bool UpdateMeans(double[][] data, int[] clustering, double[][] means)
         {
-            int numClusters = means.Length;
-            int[] clusterCounts = new int[numClusters];
-            for (int i = 0; i < data.Length; ++i)
+            var numClusters = means.Length;
+            var clusterCounts = new int[numClusters];
+            for (var i = 0; i < data.Length; ++i)
             {
-                int cluster = clustering[i];
+                var cluster = clustering[i];
                 ++clusterCounts[cluster];
             }
 
-            for (int k = 0; k < numClusters; ++k)
-                if (clusterCounts[k] == 0)
-                    return false;
-
-            for (int k = 0; k < means.Length; ++k)
-            for (int j = 0; j < means[k].Length; ++j)
-                means[k][j] = 0.0;
-
-            for (int i = 0; i < data.Length; ++i)
+            for (var k = 0; k < numClusters; ++k)
             {
-                int cluster = clustering[i];
-                for (int j = 0; j < data[i].Length; ++j)
+                if (clusterCounts[k] == 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var t in means)
+            {
+                for (var j = 0; j < t.Length; ++j)
+                {
+                    t[j] = 0.0;
+                }
+            }
+
+            for (var i = 0; i < data.Length; ++i)
+            {
+                var cluster = clustering[i];
+                for (var j = 0; j < data[i].Length; ++j)
                     means[cluster][j] += data[i][j]; // accumulate sum
             }
 
-            for (int k = 0; k < means.Length; ++k)
-            for (int j = 0; j < means[k].Length; ++j)
-                means[k][j] /= clusterCounts[k]; // danger of div by 0
+            for (var k = 0; k < means.Length; ++k)
+            {
+                for (var j = 0; j < means[k].Length; ++j)
+                {
+                    means[k][j] /= clusterCounts[k]; // danger of div by 0
+                }
+            }
+
+
             return true;
         }
 
         private static double[][] Allocate(int numClusters, int numColumns)
         {
-            double[][] result = new double[numClusters][];
-            for (int k = 0; k < numClusters; ++k)
+            var result = new double[numClusters][];
+            for (var k = 0; k < numClusters; ++k)
+            {
                 result[k] = new double[numColumns];
+            }
             return result;
         }
 
         private static bool UpdateClustering(double[][] data, int[] clustering, double[][] means)
         {
-            int numClusters = means.Length;
-            bool changed = false;
+            var numClusters = means.Length;
+            var changed = false;
 
-            int[] newClustering = new int[clustering.Length];
+            var newClustering = new int[clustering.Length];
             Array.Copy(clustering, newClustering, clustering.Length);
 
-            double[] distances = new double[numClusters];
+            var distances = new double[numClusters];
 
-            for (int i = 0; i < data.Length; ++i)
+            for (var i = 0; i < data.Length; ++i)
             {
-                for (int k = 0; k < numClusters; ++k)
+                for (var k = 0; k < numClusters; ++k)
+                {
                     distances[k] = Distance(data[i], means[k]);
+                }
 
-                int newClusterID = MinIndex(distances);
-                if (newClusterID != newClustering[i])
+                var newClusterId = MinIndex(distances);
+                if (newClusterId != newClustering[i])
                 {
                     changed = true;
-                    newClustering[i] = newClusterID;
+                    newClustering[i] = newClusterId;
                 }
             }
 
             if (changed == false)
                 return false;
 
-            int[] clusterCounts = new int[numClusters];
-            for (int i = 0; i < data.Length; ++i)
+            var clusterCounts = new int[numClusters];
+            for (var i = 0; i < data.Length; ++i)
             {
-                int cluster = newClustering[i];
+                var cluster = newClustering[i];
                 ++clusterCounts[cluster];
             }
 
-            for (int k = 0; k < numClusters; ++k)
+            for (var k = 0; k < numClusters; ++k)
+            {
                 if (clusterCounts[k] == 0)
+                {
                     return false;
+                }
+            }
 
             Array.Copy(newClustering, clustering, newClustering.Length);
             return true; // no zero-counts and at least one change
@@ -445,27 +414,27 @@ namespace POID.ImageProcessingApp.Processing
 
         private static double Distance(double[] tuple, double[] mean)
         {
-            double sumSquaredDiffs = 0.0;
-            for (int j = 0; j < tuple.Length; ++j)
-                sumSquaredDiffs += Math.Pow((tuple[j] - mean[j]), 2);
+            var sumSquaredDiffs = tuple.Select((t, j) => Math.Pow(t - mean[j], 2)).Sum();
             return Math.Sqrt(sumSquaredDiffs);
         }
 
         private static int MinIndex(double[] distances)
         {
-            int indexOfMin = 0;
-            double smallDist = distances[0];
-            for (int k = 0; k < distances.Length; ++k)
-            {
+            var indexOfMin = 0;
+            var smallDist = distances[0];
+            for (var k = 0; k < distances.Length; ++k)
                 if (distances[k] < smallDist)
                 {
                     smallDist = distances[k];
                     indexOfMin = k;
                 }
-            }
+
             return indexOfMin;
         }
 
-        private static Rgb24 ColourToRgb(Color color) => new Rgb24(color.R, color.G, color.B);
+        private static Rgb24 ColourToRgb(Color color)
+        {
+            return new Rgb24(color.R, color.G, color.B);
+        }
     }
 }

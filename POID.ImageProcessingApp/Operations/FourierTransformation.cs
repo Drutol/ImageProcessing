@@ -7,47 +7,40 @@ namespace POID.ImageProcessingApp.Operations
     {
         public enum Direction
         {
-            /// <summary>
-            /// Forward direction of Fourier transformation.
-            /// </summary>
             Forward = 1,
-
-            /// <summary>
-            /// Backward direction of Fourier transformation.
-            /// </summary>
             Backward = -1
         };
 
         public static void FFT(Complex[] data, Direction direction)
         {
-            int n = data.Length;
-            int m = Log2(n);
+            var n = data.Length;
+            var m = Log2(n);
 
             // reorder data first
             ReorderData(data);
 
             // compute FFT
-            int tn = 1, tm;
+            int tn = 1;
 
-            for (int k = 1; k <= m; k++)
+            for (var k = 1; k <= m; k++)
             {
-                Complex[] rotation = GetComplexRotation(k, direction);
+                var rotation = GetComplexRotation(k, direction);
 
-                tm = tn;
+                var tm = tn;
                 tn <<= 1;
 
-                for (int i = 0; i < tm; i++)
+                for (var i = 0; i < tm; i++)
                 {
-                    Complex t = rotation[i];
+                    var t = rotation[i];
 
-                    for (int even = i; even < n; even += tn)
+                    for (var even = i; even < n; even += tn)
                     {
-                        int odd = even + tm;
-                        Complex ce = data[even];
-                        Complex co = data[odd];
+                        var odd = even + tm;
+                        var ce = data[even];
+                        var co = data[odd];
 
-                        double tr = co.Real * t.Real - co.Imaginary * t.Imaginary;
-                        double ti = co.Real * t.Imaginary + co.Imaginary * t.Real;
+                        var tr = co.Real * t.Real - co.Imaginary * t.Imaginary;
+                        var ti = co.Real * t.Imaginary + co.Imaginary * t.Real;
 
                         data[even] += new Complex(tr, ti);
                         data[odd] = new Complex(ce.Real - tr, ce.Imaginary - ti);
@@ -57,28 +50,16 @@ namespace POID.ImageProcessingApp.Operations
 
             if (direction == Direction.Forward)
             {
-                for (int i = 0; i < data.Length; i++)
+                for (var i = 0; i < data.Length; i++)
                     data[i] /= (double)n;
             }
         }
 
-        /// <summary>
-        /// Two dimensional Fast Fourier Transform.
-        /// </summary>
-        /// 
-        /// <param name="data">Data to transform.</param>
-        /// <param name="direction">Transformation direction.</param>
-        /// 
-        /// <remarks><para><note>The method accepts <paramref name="data"/> array of 2<sup>n</sup> size
-        /// only in each dimension, where <b>n</b> may vary in the [1, 14] range. For example, 16x16 array
-        /// is valid, but 15x15 is not.</note></para></remarks>
-        /// 
-        /// <exception cref="ArgumentException">Incorrect data length.</exception>
-        /// 
+
         public static void FFT2(Complex[,] data, Direction direction)
         {
-            int k = data.GetLength(0);
-            int n = data.GetLength(1);
+            var k = data.GetLength(0);
+            var n = data.GetLength(1);
 
             // check data size
             if (!((k > 0) && ((k & (k - 1)) == 0)) || !((n > 0) && ((n & (n - 1)) == 0)))
@@ -90,34 +71,34 @@ namespace POID.ImageProcessingApp.Operations
             // process rows
             var row = new Complex[n];
 
-            for (int i = 0; i < k; i++)
+            for (var i = 0; i < k; i++)
             {
                 // copy row
-                for (int j = 0; j < row.Length; j++)
+                for (var j = 0; j < row.Length; j++)
                     row[j] = data[i, j];
 
                 // transform it
                 FFT(row, direction);
 
                 // copy back
-                for (int j = 0; j < row.Length; j++)
+                for (var j = 0; j < row.Length; j++)
                     data[i, j] = row[j];
             }
 
             // process columns
             var col = new Complex[k];
 
-            for (int j = 0; j < n; j++)
+            for (var j = 0; j < n; j++)
             {
                 // copy column
-                for (int i = 0; i < k; i++)
+                for (var i = 0; i < k; i++)
                     col[i] = data[i, j];
 
                 // transform it
                 FFT(col, direction);
 
                 // copy back
-                for (int i = 0; i < k; i++)
+                for (var i = 0; i < k; i++)
                     data[i, j] = col[i];
             }
         }
@@ -140,16 +121,16 @@ namespace POID.ImageProcessingApp.Operations
             // check if the array is already calculated
             if (reversedBits[numberOfBits - 1] == null)
             {
-                int n = Pow2(numberOfBits);
-                int[] rBits = new int[n];
+                var n = Pow2(numberOfBits);
+                var rBits = new int[n];
 
                 // calculate the array
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                 {
-                    int oldBits = i;
-                    int newBits = 0;
+                    var oldBits = i;
+                    var newBits = 0;
 
-                    for (int j = 0; j < numberOfBits; j++)
+                    for (var j = 0; j < numberOfBits; j++)
                     {
                         newBits = (newBits << 1) | (oldBits & 1);
                         oldBits = (oldBits >> 1);
@@ -164,21 +145,21 @@ namespace POID.ImageProcessingApp.Operations
         // Get rotation of complex number
         private static Complex[] GetComplexRotation(int numberOfBits, Direction direction)
         {
-            int directionIndex = (direction == Direction.Forward) ? 0 : 1;
+            var directionIndex = (direction == Direction.Forward) ? 0 : 1;
 
             // check if the array is already calculated
             if (complexRotation[numberOfBits - 1, directionIndex] == null)
             {
-                int n = 1 << (numberOfBits - 1);
-                double uR = 1.0;
-                double uI = 0.0;
-                double angle = System.Math.PI / n * (int)direction;
-                double wR = System.Math.Cos(angle);
-                double wI = System.Math.Sin(angle);
+                var n = 1 << (numberOfBits - 1);
+                var uR = 1.0;
+                var uI = 0.0;
+                var angle = System.Math.PI / n * (int)direction;
+                var wR = System.Math.Cos(angle);
+                var wI = System.Math.Sin(angle);
                 double t;
-                Complex[] rotation = new Complex[n];
+                var rotation = new Complex[n];
 
-                for (int i = 0; i < n; i++)
+                for (var i = 0; i < n; i++)
                 {
                     rotation[i] = new Complex(uR, uI);
                     t = uR * wI + uI * wR;
@@ -194,21 +175,21 @@ namespace POID.ImageProcessingApp.Operations
         // Reorder data for FFT using
         private static void ReorderData(Complex[] data)
         {
-            int len = data.Length;
+            var len = data.Length;
 
             // check data length
             if ((len < minLength) || (len > maxLength) || (!((len > 0) && ((len & (len - 1)) == 0))))
                 throw new ArgumentException("Incorrect data length.");
 
-            int[] rBits = GetReversedBits(Log2(len));
+            var rBits = GetReversedBits(Log2(len));
 
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
-                int s = rBits[i];
+                var s = rBits[i];
 
                 if (s > i)
                 {
-                    Complex t = data[i];
+                    var t = data[i];
                     data[i] = data[s];
                     data[s] = t;
                 }
