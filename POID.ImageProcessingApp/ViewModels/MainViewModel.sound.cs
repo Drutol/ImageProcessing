@@ -58,31 +58,124 @@ namespace POID.ImageProcessingApp.ViewModels
 
         public RelayCommand LoadSoundCommand => new RelayCommand(() =>
         {
+            Tones=new List<Tone>();
             var openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = $"{AppDomain.CurrentDomain.BaseDirectory}Assets";
             if (openFileDialog.ShowDialog() == true)
             {
                 _soundProcessor.Load(openFileDialog.FileName);
 
-                var d = new List<DataPoint>();
-                for (int i = 0; i < _soundProcessor.FftLength / 2; i++)
+
+
+                foreach (var fourierSound in _soundProcessor.FourierSounds)
                 {
-                    d.Add(new DataPoint((double) i * _soundProcessor.SampleRate / _soundProcessor.FftLength / 2,
-                        _soundProcessor.FourierSound[i].X * _soundProcessor.FourierSound[i].X +
-                        _soundProcessor.FourierSound[i].Y * _soundProcessor.FourierSound[i].Y));
+                    var d = new List<DataPoint>();
+
+                    for (int i = 0; i < _soundProcessor.FftLength / 2; i++)
+                    {
+                        d.Add(new DataPoint((double) i * _soundProcessor.SampleRate / _soundProcessor.FftLength / 2,
+                            fourierSound[i].X * fourierSound[i].X +
+                            fourierSound[i].Y * fourierSound[i].Y));
+                    }
+
+                    Points = d;
+
+                    var peak = d.Max(point => point.Y);
+                    var index = d.IndexOf(d.First(point => Math.Abs(point.Y - peak) < 0.0001));
+
+                    var newFrequency = (double) (index + 1) * _soundProcessor.SampleRate / _soundProcessor.FftLength /
+                                       2;
+                    var duration = (double) 1 / _soundProcessor.SampleRate * _soundProcessor.FftLength * 1000 * 2;
+
+
+                    var last = Tones.LastOrDefault();
+                    if (last != null)
+                    {
+                        if (Math.Abs(last.Frequency - newFrequency) < 0.5 || newFrequency < 20)
+                        {
+                            last.Duration += duration;
+                        }
+                        else
+                        {
+                            Tones.Add(new Tone
+                            {
+                                Frequency = newFrequency,
+                                Duration = duration,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Tones.Add(new Tone
+                        {
+                            Frequency = newFrequency,
+                            Duration = duration,
+                        });
+                    }
                 }
 
-                Points = d;
 
-                var samples = d.Select(point => point.Y).ToArray();
-                var peaks = FindPeaks(samples);
+                Tones = new List<Tone>(Tones.Where(tone => tone.Duration > 1));
+                Console.WriteLine($"Total {Tones.Sum(tone => tone.Duration)}ms");
+            }
+        });
 
-                Tones = peaks.Select(i => new Tone
+        public RelayCommand LoadTimeSoundCommand => new RelayCommand(() =>
+        {
+            Tones = new List<Tone>();
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory = $"{AppDomain.CurrentDomain.BaseDirectory}Assets";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _soundProcessor.LoadTime(openFileDialog.FileName);
+
+                var d = new List<DataPoint>();
+                for (int j = 0; j < _soundProcessor.Samples[0].Length; j++)
                 {
+                    d.Add(new DataPoint(j,_soundProcessor.Samples[0][j]));
+                }
 
-                    Frequency = (double) i * _soundProcessor.SampleRate / _soundProcessor.FftLength / 2,
-                    Duration = Math.Sqrt(samples[i] ) / _soundProcessor.SampleRate// / 14400000 / 360,
-                }).ToList();
+                foreach (var buffer in _soundProcessor.Samples)
+                {
+                    var peaks = _soundProcessor.FindPeaks(buffer);
+                    if(peaks.Length < 2)
+                        continue;
+                    var diff = peaks[1] - peaks[0];
+
+                    var newFrequency = _soundProcessor.SampleRate / diff;
+                    var duration = 1.0 / _soundProcessor.SampleRate * buffer.Length * 1000 / 2;
+
+
+                    var last = Tones.LastOrDefault();
+                    if (last != null)
+                    {
+                        if (Math.Abs(last.Frequency - newFrequency) < 100 || newFrequency < 20)
+                        {
+                            last.Duration += duration;
+                        }
+                        else
+                        {
+                            Tones.Add(new Tone
+                            {
+                                Frequency = newFrequency,
+                                Duration = duration,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        Tones.Add(new Tone
+                        {
+                            Frequency = newFrequency,
+                            Duration = duration,
+                        });
+                    }
+                }
+
+
+                Tones = new List<Tone>(Tones.Where(tone => tone.Duration > 1));
+                Console.WriteLine($"Total {Tones.Sum(tone => tone.Duration)}ms");
+                Points = d;
             }
         });
 

@@ -23,9 +23,10 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <Button Content="Load Wav" Command="{Binding LoadSoundCommand}"/>
+                    <Button Content="Load Wav To Freq Domain" Command="{Binding LoadSoundCommand}"/>
+                    <Button Content="Load Wav To Time Domain" Command="{Binding LoadTimeSoundCommand}"/>
 
-                    <ListView ItemsSource="{Binding Tones}">
+                    <ListView ItemsSource="{Binding Tones}" Height="500">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}"/>
