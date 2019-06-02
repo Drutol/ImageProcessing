@@ -20,7 +20,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace POID.ImageProcessingApp.ViewModels
 {
-    public class MainViewModel : ViewModelBase
+    public partial class MainViewModel : ViewModelBase
     {
         private byte[] _inputImageSource;
         private byte[] _outputImageSource;

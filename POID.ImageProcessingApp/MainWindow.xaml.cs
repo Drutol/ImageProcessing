@@ -23,9 +23,12 @@ namespace POID.ImageProcessingApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainViewModel _viewModel;
+
         public MainWindow()
         {
-            DataContext = new MainViewModel();
+            _viewModel = new MainViewModel();
+            DataContext = _viewModel;
             InitializeComponent();
             Loaded += OnLoaded;
         }

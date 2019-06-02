@@ -106,7 +106,7 @@ namespace POID.ImageProcessingApp.Operations
  
 
         private const int minLength = 2;
-        private const int maxLength = 16384;
+        private const int maxLength = 88200;
         private const int minBits = 1;
         private const int maxBits = 14;
         private static int[][] reversedBits = new int[maxBits][];

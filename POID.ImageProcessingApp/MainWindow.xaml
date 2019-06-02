@@ -8,365 +8,413 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:oxyPlot="clr-namespace:OxyPlot;assembly=OxyPlot"
         xmlns:dataGrid2D="http://gu.se/DataGrid2D"
+        xmlns:zedGraph="clr-namespace:ZedGraph;assembly=ZedGraph"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
         Title="MainWindow" Height="1000.692" Width="800">
-    <Grid Background="#f1f1f1">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <TabControl>
 
-        <Border Grid.Column="0" Background="#fafafa" Width="220">
-            <TabControl>
-                <TabItem Header="Zad1">
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+        <TabItem Header="Part2">
 
-                        <StackPanel>
-                            <Button Command="{Binding AdjustBrightnessCommand}">
-                                <Button.Content>
-                                    <TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <Button Content="Load Wav" Command="{Binding LoadSoundCommand}"/>
+
+                    <ListView ItemsSource="{Binding Tones}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Button Content="Play" Command="{Binding PlaySoundCommand}"/>
+                </StackPanel>
+
+
+                <!--<WindowsFormsHost Grid.Column="1" Name="windowsFormsHost1" Margin="0,0,0,0" Visibility="Collapsed">
+
+                    <zedGraph:ZedGraphControl x:Name="graph"
+                                              Width="500"
+                                              Height="320" />
+                </WindowsFormsHost>-->
+
+                <oxy:Plot  Grid.Column="1" Visibility="Visible">
+                    <oxy:Plot.Series>
+                        <oxy:LineSeries ItemsSource="{Binding Points}"/>
+                    </oxy:Plot.Series>
+                </oxy:Plot>
+            </Grid>
+
+
+
+        </TabItem>
+
+        <TabItem Header="Part1">
+            <Grid Background="#f1f1f1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#fafafa" Width="220">
+                    <TabControl>
+                        <TabItem Header="Zad1">
+                            <Grid Margin="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel>
+                                    <Button Command="{Binding AdjustBrightnessCommand}">
+                                        <Button.Content>
+                                            <TextBlock>
                                         Adjust brightness: <Run Text="{Binding BrightnessSliderValue}" />
-                                    </TextBlock>
-                                </Button.Content>
-                            </Button>
-                            <Slider Minimum="-255" Maximum="255" Margin="5"
+                                            </TextBlock>
+                                        </Button.Content>
+                                    </Button>
+                                    <Slider Minimum="-255" Maximum="255" Margin="5"
                                     Value="{Binding BrightnessSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TickFrequency="1" />
 
-                            <Separator Margin="0,8,0,16" />
+                                    <Separator Margin="0,8,0,16" />
 
-                            <Button Command="{Binding AdjustContrastCommand}">
-                                <Button.Content>
-                                    <TextBlock>
+                                    <Button Command="{Binding AdjustContrastCommand}">
+                                        <Button.Content>
+                                            <TextBlock>
                                         Adjust contrast: <Run Text="{Binding ContrastSliderValue, StringFormat=N3}" />
-                                    </TextBlock>
-                                </Button.Content>
-                            </Button>
-                            <Slider Minimum="-10" Maximum="10" Margin="5"
+                                            </TextBlock>
+                                        </Button.Content>
+                                    </Button>
+                                    <Slider Minimum="-10" Maximum="10" Margin="5"
                                     Value="{Binding ContrastSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Separator Margin="0,8,0,16" />
+                                    <Separator Margin="0,8,0,16" />
 
-                            <TabControl>
-                                <TabItem Header="R">
-                                    <StackPanel>
-                                        <TextBlock>
+                                    <TabControl>
+                                        <TabItem Header="R">
+                                            <StackPanel>
+                                                <TextBlock>
                                             <Run Text="Minimal Value: " />
                                             <Run Text="{Binding MinimumRChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="0" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="0" Maximum="255" Margin="5"
                                                 Value="{Binding MinimumRChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                        <TextBlock>
+                                                <TextBlock>
                                             <Run Text="Maximal Value: " />
                                             <Run Text="{Binding MaximumRChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="{Binding MinimumRChannelSliderValue}" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="{Binding MinimumRChannelSliderValue}" Maximum="255" Margin="5"
                                                 Value="{Binding MaximumRChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </TabItem>
-                                <TabItem Header="G">
-                                    <StackPanel>
-                                        <TextBlock>
+                                            </StackPanel>
+                                        </TabItem>
+                                        <TabItem Header="G">
+                                            <StackPanel>
+                                                <TextBlock>
                                             <Run Text="Minimal Value: " />
                                             <Run Text="{Binding MinimumGChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="0" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="0" Maximum="255" Margin="5"
                                                 Value="{Binding MinimumGChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                        <TextBlock>
+                                                <TextBlock>
                                             <Run Text="Maximal Value: " />
                                             <Run Text="{Binding MaximumGChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="{Binding MinimumGChannelSliderValue}" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="{Binding MinimumGChannelSliderValue}" Maximum="255" Margin="5"
                                                 Value="{Binding MaximumGChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </TabItem>
-                                <TabItem Header="B">
-                                    <StackPanel>
-                                        <TextBlock>
+                                            </StackPanel>
+                                        </TabItem>
+                                        <TabItem Header="B">
+                                            <StackPanel>
+                                                <TextBlock>
                                             <Run Text="Minimal Value: " />
                                             <Run Text="{Binding MinimumBChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="0" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="0" Maximum="255" Margin="5"
                                                 Value="{Binding MinimumBChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                                        <TextBlock>
+                                                <TextBlock>
                                             <Run Text="Maximal Value: " />
                                             <Run Text="{Binding MaximumBChannelSliderValue, StringFormat=N3}" />
-                                        </TextBlock>
-                                        <Slider Minimum="{Binding MinimumBChannelSliderValue}" Maximum="255" Margin="5"
+                                                </TextBlock>
+                                                <Slider Minimum="{Binding MinimumBChannelSliderValue}" Maximum="255" Margin="5"
                                                 Value="{Binding MaximumBChannelSliderValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </TabItem>
-                            </TabControl>
+                                            </StackPanel>
+                                        </TabItem>
+                                    </TabControl>
 
 
-                            <Button Content="Modify with histogram" Command="{Binding H5}" Margin="0,5" />
+                                    <Button Content="Modify with histogram" Command="{Binding H5}" Margin="0,5" />
 
-                            <Separator Margin="0,8,0,8" />
+                                    <Separator Margin="0,8,0,8" />
 
-                            <Button Content="Create negative" Command="{Binding CreateNegativeCommand}" Margin="0,5" />
+                                    <Button Content="Create negative" Command="{Binding CreateNegativeCommand}" Margin="0,5" />
 
-                            <Separator Margin="0,8,0,8" />
+                                    <Separator Margin="0,8,0,8" />
 
-                            <TextBlock Text="Matrix size:" />
+                                    <TextBlock Text="Matrix size:" />
 
-                            <ComboBox ItemsSource="{Binding MatrixSizes}"
+                                    <ComboBox ItemsSource="{Binding MatrixSizes}"
                                       SelectedItem="{Binding SelectedMatrixSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <TextBlock Text="Filter:" Margin="0,5" />
+                                    <TextBlock Text="Filter:" Margin="0,5" />
 
-                            <ComboBox ItemsSource="{Binding AvailableFilter}"
+                                    <ComboBox ItemsSource="{Binding AvailableFilter}"
                                       SelectedItem="{Binding SelectedFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
 
 
-                            <TextBlock Text="Generic filter matrix:" Margin="0,5"
+                                    <TextBlock Text="Generic filter matrix:" Margin="0,5"
                                        Visibility="{Binding IsGenericMatrixVisible}" />
 
-                            <DataGrid HeadersVisibility="None" Visibility="{Binding IsGenericMatrixVisible}"
+                                    <DataGrid HeadersVisibility="None" Visibility="{Binding IsGenericMatrixVisible}"
                                       dataGrid2D:ItemsSource.Array2DTransposed="{Binding FilterMask}" />
 
-                            <Button Content="Apply filter" Margin="0,5" Command="{Binding ApplyFilterCommand}" />
-                        </StackPanel>
+                                    <Button Content="Apply filter" Margin="0,5" Command="{Binding ApplyFilterCommand}" />
+                                </StackPanel>
 
-                        <ListView Grid.Row="1" ItemsSource="{Binding Images}" Margin="0,10,0,0"
+                                <ListView Grid.Row="1" ItemsSource="{Binding Images}" Margin="0,10,0,0"
                                   SelectedItem="{Binding SelectedImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" />
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </Grid>
-                </TabItem>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" />
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </TabItem>
 
-                <TabItem Header="Zad2">
-                    <Grid Margin="10">
-                        <StackPanel>
-                            <TextBlock>
+                        <TabItem Header="Zad2">
+                            <Grid Margin="10">
+                                <StackPanel>
+                                    <TextBlock>
                                 <Run Text="Logscale: " />
                                 <Run Text="{Binding Logscale, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="0" Maximum="2048" Margin="5" 
-                                    Value="{Binding Logscale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />                 
-                            <TextBlock>
+                                    </TextBlock>
+                                    <Slider Minimum="0" Maximum="2048" Margin="5" 
+                                    Value="{Binding Logscale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock>
                                 
                                 <Run Text="Logoffset: " />
                                 <Run Text="{Binding LogOffset, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="0" Maximum="256" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="0" Maximum="256" Margin="5" 
                                     Value="{Binding LogOffset, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="Do Fourier" Command="{Binding DoFourierCommand}" />
-                            <Button Content="Flip Image" Command="{Binding FlipImageCommand}" Margin="0,10,0,0" />
-                            <Button Content="Reverse Fourier" Command="{Binding ReverseFourierCommand}"
+                                    <Button Content="Do Fourier" Command="{Binding DoFourierCommand}" />
+                                    <Button Content="Flip Image" Command="{Binding FlipImageCommand}" Margin="0,10,0,0" />
+                                    <Button Content="Reverse Fourier" Command="{Binding ReverseFourierCommand}"
                                     Margin="0,10,0,0" />
 
-                            <RadioButton GroupName="A" Margin="5" Content="Lowpass" Command="{Binding SetFourierFilterCommand}" CommandParameter="1"/>
-                            <RadioButton GroupName="A" Margin="5" Content="Highpass"  Command="{Binding SetFourierFilterCommand}" CommandParameter="2"/>
-                            <RadioButton GroupName="A" Margin="5" Content="Ring" Command="{Binding SetFourierFilterCommand}" CommandParameter="3"/>
+                                    <RadioButton GroupName="A" Margin="5" Content="Lowpass" Command="{Binding SetFourierFilterCommand}" CommandParameter="1"/>
+                                    <RadioButton GroupName="A" Margin="5" Content="Highpass"  Command="{Binding SetFourierFilterCommand}" CommandParameter="2"/>
+                                    <RadioButton GroupName="A" Margin="5" Content="Ring" Command="{Binding SetFourierFilterCommand}" CommandParameter="3"/>
 
-                            <TextBlock>
+                                    <TextBlock>
                                 <Run Text="Inner filter radius: " />
                                 <Run Text="{Binding InnerFilterRadius, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="0" Maximum="256" Margin="5"
+                                    </TextBlock>
+                                    <Slider Minimum="0" Maximum="256" Margin="5"
                                     Value="{Binding InnerFilterRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                            
-                            <TextBlock>
+
+                                    <TextBlock>
                                 <Run Text="Outer filter radius: " />
                                 <Run Text="{Binding OuterFilterRadius, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="0" Maximum="256" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="0" Maximum="256" Margin="5" 
                                     Value="{Binding OuterFilterRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="Filter" Margin="0,10,0,0" Command="{Binding FilterFourierCommand}"/>
+                                    <Button Content="Filter" Margin="0,10,0,0" Command="{Binding FilterFourierCommand}"/>
 
-                            
 
-                            <TextBlock Margin="0,32,0,0">
+
+                                    <TextBlock Margin="0,32,0,0">
                                 <Run Text="K: " />
                                 <Run Text="{Binding PhaseK, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="-20" Maximum="20" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="-20" Maximum="20" Margin="5" 
                                     Value="{Binding PhaseK, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <TextBlock>
+                                    <TextBlock>
                                 <Run Text="L: " />
                                 <Run Text="{Binding PhaseL, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="-20" Maximum="20" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="-20" Maximum="20" Margin="5" 
                                     Value="{Binding PhaseL, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="Filter" Margin="0,10,0,0" Command="{Binding PhaseFilterCommand}"/>
+                                    <Button Content="Filter" Margin="0,10,0,0" Command="{Binding PhaseFilterCommand}"/>
 
-                            <TextBlock Margin="0,32,0,0">
+                                    <TextBlock Margin="0,32,0,0">
                                 <Run Text="Clusters: " />
                                 <Run Text="{Binding ClustersCount, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="1" Maximum="12" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="1" Maximum="12" Margin="5" 
                                     Value="{Binding ClustersCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="KMeans Segmentation" Margin="0,10,0,0" Command="{Binding SegmentateCommand}"/> 
-                            
-                            <TextBlock Margin="0,32,0,0">
+                                    <Button Content="KMeans Segmentation" Margin="0,10,0,0" Command="{Binding SegmentateCommand}"/>
+
+                                    <TextBlock Margin="0,32,0,0">
                                 <Run Text="Threshold: " />
                                 <Run Text="{Binding GrowingThreshold, StringFormat=N3}" />
-                            </TextBlock>
-                            <Slider Minimum="1" Maximum="255" Margin="5" 
+                                    </TextBlock>
+                                    <Slider Minimum="1" Maximum="255" Margin="5" 
                                     Value="{Binding GrowingThreshold, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                            <Button Content="Growing Segmentation" Margin="0,10,0,0" Command="{Binding GrowingSegmentationCommand}"/>
+                                    <Button Content="Growing Segmentation" Margin="0,10,0,0" Command="{Binding GrowingSegmentationCommand}"/>
 
-                            <ListView ItemsSource="{Binding ClusterEntries}" Margin="0,32,0,0" Height="200">
-                                <ListView.ItemTemplate>
-                                    <DataTemplate>
-                                        <CheckBox IsChecked="{Binding Display, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                            <CheckBox.Content>
-                                                <TextBlock>
+                                    <ListView ItemsSource="{Binding ClusterEntries}" Margin="0,32,0,0" Height="200">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding Display, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                                    <CheckBox.Content>
+                                                        <TextBlock>
                                                     Cluster #<Run Text="{Binding Label}" Foreground="{Binding Colour}"/>
-                                                </TextBlock>
-                                            </CheckBox.Content>
-                                        </CheckBox>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-                    </Grid>
-                </TabItem>
-            </TabControl>
+                                                        </TextBlock>
+                                                    </CheckBox.Content>
+                                                </CheckBox>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
 
-        </Border>
+                </Border>
 
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-            <TabControl>
-                <TabItem Header="Frequency">
-                    <Image Margin="20" Source="{Binding InputImageSource}" />
-                </TabItem>   
-                <TabItem Header="Phase">
-                    <Image Margin="20" Source="{Binding InputImageSourcePhase}" />
-                </TabItem>
-            </TabControl>
+                    <TabControl>
+                        <TabItem Header="Frequency">
+                            <Image Margin="20" Source="{Binding InputImageSource}" />
+                        </TabItem>
+                        <TabItem Header="Phase">
+                            <Image Margin="20" Source="{Binding InputImageSourcePhase}" />
+                        </TabItem>
+                    </TabControl>
 
 
-            <TabControl Grid.Row="1">
-                <TabItem Header="R">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                    <TabControl Grid.Row="1">
+                        <TabItem Header="R">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding InputImageHistogramR}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-                <TabItem Header="G">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                        <TabItem Header="G">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding InputImageHistogramG}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-                <TabItem Header="B">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                        <TabItem Header="B">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding InputImageHistogramB}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-            </TabControl>
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                    </TabControl>
 
-        </Grid>
+                </Grid>
 
-        <Grid Grid.Column="2">
-            <Button Content="&lt;---" Width="50" Height="50" Command="{Binding CopyOutputToInputCommand}" />
-        </Grid>
+                <Grid Grid.Column="2">
+                    <Button Content="&lt;---" Width="50" Height="50" Command="{Binding CopyOutputToInputCommand}" />
+                </Grid>
 
-        <Grid Grid.Column="3">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+                <Grid Grid.Column="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-            <TabControl>
-                <TabItem Header="Frequency">
-                    <Image Margin="20" Source="{Binding OutputImageSource}" />
-                </TabItem>
-                <TabItem Header="Phase">
-                    <Image Margin="20" Source="{Binding OutputImageSourcePhase}" />
-                </TabItem>
-            </TabControl>
+                    <TabControl>
+                        <TabItem Header="Frequency">
+                            <Image Margin="20" Source="{Binding OutputImageSource}" />
+                        </TabItem>
+                        <TabItem Header="Phase">
+                            <Image Margin="20" Source="{Binding OutputImageSourcePhase}" />
+                        </TabItem>
+                    </TabControl>
 
 
-            <TabControl Grid.Row="1">
-                <TabItem Header="R">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                    <TabControl Grid.Row="1">
+                        <TabItem Header="R">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding OutputImageHistogramR}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-                <TabItem Header="G">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                        <TabItem Header="G">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding OutputImageHistogramG}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-                <TabItem Header="B">
-                    <oxy:Plot Height="150">
-                        <oxy:Plot.Series>
-                            <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                        <TabItem Header="B">
+                            <oxy:Plot Height="150">
+                                <oxy:Plot.Series>
+                                    <oxy:ColumnSeries StrokeThickness="1" AlternationCount="0" ColumnWidth="1"
                                               ItemsSource="{Binding OutputImageHistogramB}" FillColor="Black"
                                               StrokeColor="Black" />
-                        </oxy:Plot.Series>
-                        <oxy:Plot.Axes>
-                            <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
-                        </oxy:Plot.Axes>
-                    </oxy:Plot>
-                </TabItem>
-            </TabControl>
-        </Grid>
-    </Grid>
+                                </oxy:Plot.Series>
+                                <oxy:Plot.Axes>
+                                    <oxy:CategoryAxis Position="Bottom" GapWidth="0" TextColor="Transparent" TickStyle="None" />
+                                </oxy:Plot.Axes>
+                            </oxy:Plot>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+            </Grid>
+        </TabItem>
+    </TabControl>
+
 </Window>
