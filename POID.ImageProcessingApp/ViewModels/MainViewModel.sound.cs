@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
@@ -80,18 +81,57 @@ namespace POID.ImageProcessingApp.ViewModels
 
                     Points = d;
 
-                    var peak = d.Max(point => point.Y);
-                    var index = d.IndexOf(d.First(point => Math.Abs(point.Y - peak) < 0.0001));
 
-                    var newFrequency = (double) (index + 1) * _soundProcessor.SampleRate / _soundProcessor.FftLength /
-                                       2;
+                    var noises = d.OrderByDescending(point => point.Y).ToList();
+                    var noise = noises.Skip(d.Count/4).Take(d.Count / 2).Average(point => point.Y);
+                    var peaks = new List<double>();
+                    var lastPeak = 0.0;
+                    for (int i = 0; i < d.Count; i++)
+                    {
+                        if (d[i].Y > noise && Math.Abs(lastPeak - d[i].X) > d.Count / 10f)
+                        {
+                            peaks.Add(d[i].X);
+                            lastPeak = d[i].X;
+                        }
+                    }
+
+                    var distances = new List<double>();
+
+                    for (int i = 0; i < peaks.Count - 1; i++)
+                    {
+                        distances.Add(peaks[i + 1] - peaks[i]);
+                    }
+
+                    distances = distances.OrderBy(i => i).Distinct().ToList();
+                    double dist;
+                    if (distances.Any())
+                    {
+                        dist = distances[(int) Math.Ceiling(distances.Count / 2f)];
+                    }
+                    else
+                    {
+                        dist = Tones.Last().Frequency;
+                    }
+                    // distances[(int)Math.Floor(distances.Count / 2.0)];
+
+
+                    //var peak = peaks.First();
+                    //var index = peak;
+
+                    //var peak = d.Max(point => point.Y);
+                    //var index = d.IndexOf(d.First(point => Math.Abs(point.Y - peak) < 0.0001));
+
+                    var newFrequency = dist;
+
+                     //var newFrequency = (double) (dist + 1) * _soundProcessor.SampleRate / _soundProcessor.FftLength /
+                     //                  2;
                     var duration = (double) 1 / _soundProcessor.SampleRate * _soundProcessor.FftLength * 1000 * 2;
 
 
                     var last = Tones.LastOrDefault();
                     if (last != null)
                     {
-                        if (Math.Abs(last.Frequency - newFrequency) < 0.5 || newFrequency < 20)
+                        if (Math.Abs(last.Frequency - newFrequency) < 30 || newFrequency < 30)
                         {
                             last.Duration += duration;
                         }
@@ -181,26 +221,32 @@ namespace POID.ImageProcessingApp.ViewModels
 
         public RelayCommand  PlaySoundCommand => new RelayCommand( async () =>
         {
-            foreach (var tone in Tones)
+            for (var index = 0; index < Tones.Count; index++)
             {
+                var tone = Tones[index];
+                var freqEnd = tone.Frequency;
+                if (index < Tones.Count - 1)
+                {
+                    freqEnd = Tones[index + 1].Frequency;
+                }
                 var sine20Seconds = new SignalGenerator()
                     {
                         Gain = 0.2,
                         Frequency = tone.Frequency,
-                        Type = SignalGeneratorType.Sin
+                        Type = SignalGeneratorType.Sin,
+                        FrequencyEnd = freqEnd,
+                        SweepLengthSecs = .1
                     }
                     .Take(TimeSpan.FromMilliseconds(tone.Duration));
+
                 using (var wo = new WaveOutEvent())
                 {
                     wo.Init(sine20Seconds);
                     wo.Play();
-                    while (wo.PlaybackState == PlaybackState.Playing)
-                    {
-                        await Task.Delay(100);
-                    }
+                    await Task.Delay((int) tone.Duration);
+                    wo.Pause();
                 }
             }
-
         });
 
         public static int[] FindPeaks( double[] samples)
