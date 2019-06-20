@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Accord.Diagnostics;
 using NAudio.Dsp;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using POID.ImageProcessingApp.Operations;
 
 namespace POID.ImageProcessingApp.Processing
@@ -94,6 +97,91 @@ namespace POID.ImageProcessingApp.Processing
                 }
             }
         }
+
+        public void LoadForFilter(string fileName, int filterLength, int cutoff)
+        {
+            using (var reader = new WaveFileReader(fileName))
+            {
+                Samples = new List<float[]>();
+                var buffer = new byte[reader.Length];
+                var read = reader.Read(buffer, 0, buffer.Length);
+                var sampleBuffer = new short[read / 2];
+                Buffer.BlockCopy(buffer, 0, sampleBuffer, 0, read);
+
+                var samplingFrequency = reader.WaveFormat.SampleRate;
+                var filter = new double[filterLength];
+                var cutoffFrequency = cutoff;
+
+                for (int i = 0; i < filterLength; i++)
+                {
+                    if (i == (filterLength - 1) / 2)
+                    {
+                        filter[i] = 2.0 * cutoffFrequency / samplingFrequency;
+                    }
+                    else
+                    {
+                        filter[i] = Math.Sin(((2 * Math.PI * cutoffFrequency) / samplingFrequency) *
+                                             (i - (filterLength - 1) / 2.0))
+                                    / (Math.PI * (i - ((filterLength - 1) / 2.0)));
+                    }
+                }
+
+                for (int i = 0; i < filterLength; i++)
+                {
+                    filter[i] *= FastFourierTransform.HammingWindow(i, filterLength);
+                }
+
+                var globalFilterBuffer = new List<short>();
+                var overlapSize = 256;
+                var windowLength = 2048 - overlapSize;
+                var windows = sampleBuffer.Length / windowLength;
+
+                var fourierN = (int)Math.Log(filterLength, 2.0);
+                var fourierFilter = filter.Select(d => new Complex()
+                {
+                    X = (float)d
+                }).ToArray();
+                FastFourierTransform.FFT(true, fourierN, fourierFilter);
+
+                for (int w = 0; w < windows; w++)
+                {
+                    var samples = sampleBuffer.Skip(Math.Max(windowLength * w - overlapSize, 0)).Take(windowLength).ToArray();
+                    var filtered = new short[windowLength];
+                    
+                    for (int i = 0; i < samples.Length; i++)
+                    {
+                        double y = 0;
+                        for (int j = 0; j < samples.Length; j++)
+                        {
+                            if (i - j >= 0 && i - j < filter.Length)
+                                y += samples[j] * filter[i - j];
+                        }
+
+                        filtered[i] = (short) y;
+                    }
+
+                    if (globalFilterBuffer.Count == 0)
+                    {
+                        globalFilterBuffer.AddRange(filtered);
+                    }
+                    else
+                    {
+                        var overlap = filtered.Take(overlapSize).ToList();
+                        var j = 0;
+                        for (int i = globalFilterBuffer.Count - overlapSize; i < globalFilterBuffer.Count; i++)
+                        {
+                            globalFilterBuffer[i] += (short)(overlap[j++] * FastFourierTransform.HammingWindow(j, overlapSize));
+                        }
+                        globalFilterBuffer.AddRange(filtered.Skip(overlapSize));
+                    }
+                }
+
+
+                Filtered = globalFilterBuffer.ToArray();
+            }
+        }
+
+        public short[] Filtered { get; set; }
 
         public int[] FindPeaks(float[] samples)
         {

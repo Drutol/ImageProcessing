@@ -216,6 +216,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\chirp_100Hz_1000Hz_lin.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\chirp_100Hz_1000Hz_log.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Assets\diff\120Hz.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

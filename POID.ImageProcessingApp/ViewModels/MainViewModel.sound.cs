@@ -35,6 +35,8 @@ namespace POID.ImageProcessingApp.ViewModels
         private LineItem myCurve1;
         private LineItem myCurve2;
         private List<Tone> _tones;
+        private int _cutoff = 500;
+        private int _filterLength = 17;
         public ZedGraphControl Graph { get; set; }
 
         public List<Tone> Tones
@@ -57,6 +59,39 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public RelayCommand LoadSoundForFilterCommand => new RelayCommand(() =>
+        {
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory = $"{AppDomain.CurrentDomain.BaseDirectory}Assets";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _soundProcessor.LoadForFilter(openFileDialog.FileName, FilterLength, Cutoff);
+
+
+            }
+
+        });
+
+        public int Cutoff
+        {
+            get => _cutoff;
+            set
+            {
+                _cutoff = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int FilterLength
+        {
+            get => _filterLength;
+            set
+            {
+                _filterLength = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public RelayCommand LoadSoundCommand => new RelayCommand(() =>
         {
             Tones=new List<Tone>();
@@ -65,8 +100,6 @@ namespace POID.ImageProcessingApp.ViewModels
             if (openFileDialog.ShowDialog() == true)
             {
                 _soundProcessor.Load(openFileDialog.FileName);
-
-
 
                 foreach (var fourierSound in _soundProcessor.FourierSounds)
                 {
@@ -219,7 +252,21 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         });
 
-        public RelayCommand  PlaySoundCommand => new RelayCommand( async () =>
+        public RelayCommand PlayFilterSoundCommand => new RelayCommand(async () =>
+        {
+            short[] shortArray = _soundProcessor.Filtered;
+            byte[] byteArray = new byte[shortArray.Length * 2];
+            Buffer.BlockCopy(shortArray, 0, byteArray, 0, byteArray.Length);
+
+            IWaveProvider provider = new RawSourceWaveStream(
+                new MemoryStream(byteArray), new WaveFormat());
+
+            var _waveOut = new WaveOutEvent();
+            _waveOut.Init(provider);
+            _waveOut.Play();
+        });
+
+        public RelayCommand PlaySoundCommand => new RelayCommand( async () =>
         {
             for (var index = 0; index < Tones.Count; index++)
             {

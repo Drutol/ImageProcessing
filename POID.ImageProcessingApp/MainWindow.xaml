@@ -25,6 +25,7 @@
                 <StackPanel>
                     <Button Content="Load Wav To Freq Domain" Command="{Binding LoadSoundCommand}"/>
                     <Button Content="Load Wav To Time Domain" Command="{Binding LoadTimeSoundCommand}"/>
+                    <Button Content="Load For Filter" Command="{Binding LoadSoundForFilterCommand}"/>
 
                     <ListView ItemsSource="{Binding Tones}" Height="500">
                         <ListView.ItemTemplate>
@@ -35,6 +36,21 @@
                     </ListView>
 
                     <Button Content="Play" Command="{Binding PlaySoundCommand}"/>
+                    <Button Content="Play" Command="{Binding PlayFilterSoundCommand}"/>
+
+                    <TextBlock Text="Cutoff Frequency"/>
+                    <TextBlock Text="{Binding Cutoff}"/>
+                    <Slider Minimum="0" Maximum="1000" Margin="5"
+                            Value="{Binding Cutoff, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Separator Margin="0,8,0,16" />
+
+                    <TextBlock Text="Filter Length"/>
+                    <TextBlock Text="{Binding FilterLength}"/>
+                    <Slider Minimum="0" Maximum="33" Margin="5"
+                            Value="{Binding FilterLength, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Separator Margin="0,8,0,16" />
                 </StackPanel>
 
 
