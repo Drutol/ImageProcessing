@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Accord.Diagnostics;
+using Accord.Math;
 using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -98,7 +99,7 @@ namespace POID.ImageProcessingApp.Processing
             }
         }
 
-        public void LoadForFilter(string fileName, int filterLength, int cutoff)
+        public void LoadForFilter(string fileName, int filterLength, int windowSize, int cutoff, Func<int, int, double> window)
         {
             using (var reader = new WaveFileReader(fileName))
             {
@@ -128,52 +129,53 @@ namespace POID.ImageProcessingApp.Processing
 
                 for (int i = 0; i < filterLength; i++)
                 {
-                    filter[i] *= FastFourierTransform.HammingWindow(i, filterLength);
+                    filter[i] *= window(i, filterLength);
                 }
 
                 var globalFilterBuffer = new List<short>();
-                var overlapSize = 256;
-                var windowLength = 2048 - overlapSize;
+                var windowLength = windowSize - filterLength + 1;
                 var windows = sampleBuffer.Length / windowLength;
 
-                var fourierN = (int)Math.Log(filterLength, 2.0);
-                var fourierFilter = filter.Select(d => new Complex()
-                {
-                    X = (float)d
-                }).ToArray();
-                FastFourierTransform.FFT(true, fourierN, fourierFilter);
+                var fourierN = windowLength + filterLength - 1;
+                var fourierFilter = filter.Select(d => new System.Numerics.Complex(d, 0)).ToArray();
+                fourierFilter = fourierFilter
+                    .Concat(Enumerable.Repeat(new System.Numerics.Complex(0, 0), fourierN - filterLength)).ToArray();
+                FourierTransform.FFT(fourierFilter, FourierTransform.Direction.Forward);
 
                 for (int w = 0; w < windows; w++)
                 {
-                    var samples = sampleBuffer.Skip(Math.Max(windowLength * w - overlapSize, 0)).Take(windowLength).ToArray();
-                    var filtered = new short[windowLength];
-                    
-                    for (int i = 0; i < samples.Length; i++)
-                    {
-                        double y = 0;
-                        for (int j = 0; j < samples.Length; j++)
-                        {
-                            if (i - j >= 0 && i - j < filter.Length)
-                                y += samples[j] * filter[i - j];
-                        }
+                    var samples = sampleBuffer.Skip(windowLength * w).Take(windowLength).ToArray();
+                    samples = 
+                        samples
+                        .Concat(Enumerable.Repeat((short)0, fourierN - windowLength)).ToArray();
+                    var complexSamples = samples.Select(s => new System.Numerics.Complex(s, 0)).ToArray();
+                    FourierTransform.FFT(complexSamples, FourierTransform.Direction.Forward);
 
-                        filtered[i] = (short) y;
+                    var multiplied = new System.Numerics.Complex[complexSamples.Length];
+
+                    for (int i = 0; i < complexSamples.Length; i++)
+                    {
+                        multiplied[i] = complexSamples[i] * fourierFilter[i];
                     }
 
-                    if (globalFilterBuffer.Count == 0)
-                    {
-                        globalFilterBuffer.AddRange(filtered);
-                    }
-                    else
-                    {
-                        var overlap = filtered.Take(overlapSize).ToList();
-                        var j = 0;
-                        for (int i = globalFilterBuffer.Count - overlapSize; i < globalFilterBuffer.Count; i++)
-                        {
-                            globalFilterBuffer[i] += (short)(overlap[j++] * FastFourierTransform.HammingWindow(j, overlapSize));
-                        }
-                        globalFilterBuffer.AddRange(filtered.Skip(overlapSize));
-                    }
+                    FourierTransform.FFT(multiplied, FourierTransform.Direction.Backward);
+
+                    globalFilterBuffer.AddRange(multiplied.Select(complex => (short)(complex.Real * 10)));
+
+                    //var filtered = new short[windowLength + filterLength -1];
+
+                    //for (int i = filterLength; i < samples.Length - filterLength; i++)
+                    //{
+                    //    double y = 0;
+                    //    for (int j = 0; j < filterLength; j++)
+                    //    {
+                    //        y += samples[i - j] * filter[j];
+                    //    }
+
+                    //    filtered[i] = (short) y;
+                    //}
+
+
                 }
 
 

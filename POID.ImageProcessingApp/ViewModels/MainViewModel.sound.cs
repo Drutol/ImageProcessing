@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using Microsoft.Win32;
+using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using OxyPlot.Series;
@@ -36,7 +37,13 @@ namespace POID.ImageProcessingApp.ViewModels
         private LineItem myCurve2;
         private List<Tone> _tones;
         private int _cutoff = 500;
-        private int _filterLength = 17;
+        private int _filterLength = 33;
+        private int _windowLength = 64;
+        private bool _isHanning = true;
+        private bool _isHann;
+        private bool _isBlack;
+        private bool _isSquare;
+        private string _lastPath;
         public ZedGraphControl Graph { get; set; }
 
         public List<Tone> Tones
@@ -59,15 +66,44 @@ namespace POID.ImageProcessingApp.ViewModels
             }
         }
 
+        public RelayCommand ReLoadSoundForFilterCommand => new RelayCommand(() =>
+        {
+            if (!string.IsNullOrEmpty(_lastPath))
+            {
+                Func<int, int, double> window = null;
+
+                if (IsBlack)
+                    window = FastFourierTransform.BlackmannHarrisWindow;
+                if (IsHann)
+                    window = FastFourierTransform.HannWindow;
+                if (IsHanning)
+                    window = FastFourierTransform.HammingWindow;
+                if (IsSquare)
+                    window = (i, i1) => 1;
+
+                _soundProcessor.LoadForFilter(_lastPath, FilterLength, WindowLength, Cutoff, window);
+            }
+        });
+
         public RelayCommand LoadSoundForFilterCommand => new RelayCommand(() =>
         {
             var openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = $"{AppDomain.CurrentDomain.BaseDirectory}Assets";
             if (openFileDialog.ShowDialog() == true)
             {
-                _soundProcessor.LoadForFilter(openFileDialog.FileName, FilterLength, Cutoff);
+                _lastPath = openFileDialog.FileName;
+                Func<int, int, double> window = null;
 
+                if (IsBlack)
+                    window = FastFourierTransform.BlackmannHarrisWindow;
+                if (IsHann)
+                    window = FastFourierTransform.HannWindow;
+                if (IsHanning)
+                    window = FastFourierTransform.HammingWindow;
+                if (IsSquare)
+                    window = (i, i1) => 1;
 
+                _soundProcessor.LoadForFilter(openFileDialog.FileName, FilterLength, WindowLength, Cutoff, window);
             }
 
         });
@@ -88,6 +124,16 @@ namespace POID.ImageProcessingApp.ViewModels
             set
             {
                 _filterLength = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int WindowLength
+        {
+            get => _windowLength;
+            set
+            {
+                _windowLength = value;
                 RaisePropertyChanged();
             }
         }
@@ -295,6 +341,47 @@ namespace POID.ImageProcessingApp.ViewModels
                 }
             }
         });
+
+        public bool IsSquare
+        {
+            get => _isSquare;
+            set
+            {
+                _isSquare = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsBlack
+        {
+            get => _isBlack;
+            set
+            {
+                _isBlack = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsHann
+        {
+            get => _isHann;
+            set
+            {
+                _isHann = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsHanning
+        {
+            get => _isHanning;
+            set
+            {
+                _isHanning = value;
+                RaisePropertyChanged();
+            }
+        }
+
 
         public static int[] FindPeaks( double[] samples)
         {
