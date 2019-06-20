@@ -9,6 +9,7 @@ using Accord.Math;
 using NAudio.Dsp;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using POID.ImageProcessingApp.Models;
 using POID.ImageProcessingApp.Operations;
 
 namespace POID.ImageProcessingApp.Processing
@@ -216,5 +217,61 @@ namespace POID.ImageProcessingApp.Processing
             return floatArr;
         }
 
+        public void LoadForEqualizer(string fileName, List<FrequencyBand> bands)
+        {
+
+            using (var reader = new WaveFileReader(fileName))
+            {
+                Samples = new List<float[]>();
+                var buffer = new byte[reader.Length];
+                var read = reader.Read(buffer, 0, buffer.Length);
+                var sampleBuffer = new short[read / 2];
+                Buffer.BlockCopy(buffer, 0, sampleBuffer, 0, read);
+
+                var samplingFrequency = reader.WaveFormat.SampleRate;
+                var globalFilterBuffer = new List<short>();
+                var windowLength = 2048;
+                var windows = sampleBuffer.Length / windowLength;
+
+
+                for (int w = 0; w < windows; w++)
+                {
+                    var samples = sampleBuffer.Skip(windowLength * w).Take(windowLength).ToArray();
+                    var complexSamples = samples.Select(s => new System.Numerics.Complex(s, 0)).ToArray();
+                    FourierTransform.FFT(complexSamples, FourierTransform.Direction.Forward);
+
+                    var multiplied = new System.Numerics.Complex[complexSamples.Length];
+
+                    for (int i = 0; i < complexSamples.Length; i++)
+                    {
+                        var frequency = i * samplingFrequency / windowLength / 2;
+                        var scale = bands.FirstOrDefault(band => band.AppliesTo(frequency))?.Scale ?? 1;
+                        multiplied[i] = complexSamples[i] * scale;
+                    }
+
+                    FourierTransform.FFT(multiplied, FourierTransform.Direction.Backward);
+
+                    globalFilterBuffer.AddRange(multiplied.Select(complex => (short)(complex.Real)));
+
+                    //var filtered = new short[windowLength + filterLength -1];
+
+                    //for (int i = filterLength; i < samples.Length - filterLength; i++)
+                    //{
+                    //    double y = 0;
+                    //    for (int j = 0; j < filterLength; j++)
+                    //    {
+                    //        y += samples[i - j] * filter[j];
+                    //    }
+
+                    //    filtered[i] = (short) y;
+                    //}
+
+
+                }
+
+
+                Filtered = globalFilterBuffer.ToArray();
+            }
+        }
     }
 }

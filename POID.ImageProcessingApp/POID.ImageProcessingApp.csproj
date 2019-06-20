@@ -124,12 +124,14 @@
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\MedianFilter.cs" />
     <Compile Include="Models\ClusterEntry.cs" />
+    <Compile Include="Models\FrequencyBand.cs" />
     <Compile Include="Models\Tone.cs" />
     <Compile Include="Operations\FourierTransformation.cs" />
     <Compile Include="Processing\ImageProcessor.fourier.cs" />
     <Compile Include="Processing\ImageProcessor.cs" />
     <Compile Include="Processing\ImageProcessor.segmentation.cs" />
     <Compile Include="Processing\SoundProcessor.cs" />
+    <Compile Include="ViewModels\MainViewModel.equalizer.cs" />
     <Compile Include="ViewModels\MainViewModel.sound.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">

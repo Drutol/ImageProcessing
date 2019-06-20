@@ -312,6 +312,22 @@ namespace POID.ImageProcessingApp.ViewModels
             _waveOut.Play();
         });
 
+        public RelayCommand PlayEqualizerSoundCommand => new RelayCommand(async () =>
+        {
+            LoadSoundForEqualizerCommand.Execute(_lastPath);
+
+            short[] shortArray = _soundProcessor.Filtered;
+            byte[] byteArray = new byte[shortArray.Length * 2];
+            Buffer.BlockCopy(shortArray, 0, byteArray, 0, byteArray.Length);
+
+            IWaveProvider provider = new RawSourceWaveStream(
+                new MemoryStream(byteArray), new WaveFormat());
+
+            var _waveOut = new WaveOutEvent();
+            _waveOut.Init(provider);
+            _waveOut.Play();
+        });
+
         public RelayCommand PlaySoundCommand => new RelayCommand( async () =>
         {
             for (var index = 0; index < Tones.Count; index++)

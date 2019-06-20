@@ -412,6 +412,7 @@ namespace POID.ImageProcessingApp.ViewModels
 
         public MainViewModel()
         {
+            InitBands();
             Images = Directory.GetFiles("Assets").ToList();
             SelectedFilter = AvailableFilter.First();
         }

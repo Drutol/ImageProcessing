@@ -27,6 +27,7 @@
                     <Button Content="Load Wav To Time Domain" Command="{Binding LoadTimeSoundCommand}"/>
                     <Button Content="Load For Filter" Command="{Binding LoadSoundForFilterCommand}"/>
                     <Button Content="Reload" Command="{Binding ReLoadSoundForFilterCommand}"/>
+                    <Button Content="Load for equalizer" Command="{Binding LoadSoundForEqualizerCommand}"/>
 
                     <ListView ItemsSource="{Binding Tones}" Height="500">
                         <ListView.ItemTemplate>
@@ -36,8 +37,9 @@
                         </ListView.ItemTemplate>
                     </ListView>
 
-                    <Button Content="Play" Command="{Binding PlaySoundCommand}"/>
-                    <Button Content="Play" Command="{Binding PlayFilterSoundCommand}"/>
+                    <Button Content="Play Tones" Command="{Binding PlaySoundCommand}"/>
+                    <Button Content="Play Filtered" Command="{Binding PlayFilterSoundCommand}"/>
+                    <Button Content="Play Equalizer" Command="{Binding PlayEqualizerSoundCommand}"/>
 
                     <TextBlock Text="Cutoff Frequency"/>
                     <TextBox Text="{Binding Cutoff, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=N0}"/>
@@ -64,11 +66,33 @@
                                               Height="320" />
                 </WindowsFormsHost>-->
 
-                <oxy:Plot  Grid.Column="1" Visibility="Visible">
-                    <oxy:Plot.Series>
-                        <oxy:LineSeries ItemsSource="{Binding Points}"/>
-                    </oxy:Plot.Series>
-                </oxy:Plot>
+                <TabControl  Grid.Column="1" >
+                    <TabItem Header="Equalizer">
+                        <StackPanel>
+                            <ListView ItemsSource="{Binding Bands}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock>
+                                                <Run Text="{Binding StartFreq, StringFormat=N2}"/>Hz - <Run Text="{Binding StopFreq,StringFormat=N2}"/>Hz x<Run Text="{Binding Scale, StringFormat=N2}"/>
+                                            </TextBlock>
+                                            <Slider Minimum="0" Maximum="5" Value="{Binding Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <Button Content="Reset" Command="{Binding ResetEqualizerCommand}"/>
+                        </StackPanel>
+
+                    </TabItem>
+                    <TabItem Header="Plot">
+                        <oxy:Plot Visibility="Visible">
+                            <oxy:Plot.Series>
+                                <oxy:LineSeries ItemsSource="{Binding Points}"/>
+                            </oxy:Plot.Series>
+                        </oxy:Plot>
+                    </TabItem>
+                </TabControl>
             </Grid>
 
 
