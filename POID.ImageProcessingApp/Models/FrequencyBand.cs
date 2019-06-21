@@ -26,6 +26,9 @@ namespace POID.ImageProcessingApp.Models
         public bool First { get; set; }
         public bool Last { get; set; }
 
+        public int CenterFrequency { get; set; }
+        public int Width { get; set; }
+
         public bool AppliesTo(double frequency)
         {
             if (First)

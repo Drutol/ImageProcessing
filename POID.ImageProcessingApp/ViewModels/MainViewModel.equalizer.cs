@@ -47,39 +47,99 @@ namespace POID.ImageProcessingApp.ViewModels
 
         private void InitBands()
         {
-            var full = 19980;
-            var currentLow = 20.0;
-            var points = new List<double>();
+            //var full = 19980;
+            //var currentLow = 20.0;
+            //var points = new List<double>();
 
-            for (int i = 2; i < 14; i++)
+            //for (int i = 2; i < 14; i++)
+            //{
+            //    points.Add(Math.Log(i, 2));
+            //}
+
+            //var max = points.Max();
+            //var min = points.Min();
+            //for (int i = 0; i < 12; i++)
+            //{
+            //    points[i] = (points[i] - min) / (max - min);
+            //}
+
+            //for (int i = 1; i < 11; i++)
+            //{
+            //    points[i] = points[i + 1] - points[i];
+            //}
+
+            //points.Reverse();
+
+            //for (int i = 1; i < 11; i++)
+            //{
+            //    var val = points[i] *1.3;
+            //    Bands.Add(new FrequencyBand
+            //    {
+            //        StartFreq = currentLow,
+            //        StopFreq = Math.Min(20000, currentLow + (full * val))
+            //    });
+            //    currentLow = Bands.Last().StopFreq;
+            //}
+
+            //Bands[0] = new FrequencyBand
+            //{
+            //    StartFreq = 20,
+            //    StopFreq = 200
+            //};
+
+            Bands = new ObservableCollection<FrequencyBand>
             {
-                points.Add(Math.Log10(i));
-            }
-
-            var max = points.Max();
-            var min = points.Min();
-            for (int i = 0; i < 12; i++)
-            {
-                points[i] = (points[i] - min) / (max - min);
-            }
-
-            for (int i = 1; i < 11; i++)
-            {
-                points[i] = points[i + 1] - points[i];
-            }
-
-            points.Reverse();
-
-            for (int i = 1; i < 11; i++)
-            {
-                var val = points[i] *1.3;
-                Bands.Add(new FrequencyBand
+                new FrequencyBand
                 {
-                    StartFreq = currentLow,
-                    StopFreq = Math.Min(20000, currentLow + (full * val))
-                });
-                currentLow = Bands.Last().StopFreq;
-            }
+                    CenterFrequency = 31,
+                    Width = 30,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 62,
+                    Width = 30,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 125,
+                    Width = 60,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 250,
+                    Width = 125,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 500,
+                    Width = 250,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 1000,
+                    Width = 500,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 2000,
+                    Width = 1000,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 4000,
+                    Width = 2000,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 8000,
+                    Width = 4000,
+                },
+                new FrequencyBand
+                {
+                    CenterFrequency = 16000,
+                    Width = 8000,
+                },
+            };
 
             Bands.First().First = true;
             Bands.Last().Last = true;
@@ -95,6 +155,19 @@ namespace POID.ImageProcessingApp.ViewModels
                 {
                     _soundProcessor.LoadForEqualizer(openFileDialog.FileName, Bands.ToList());
                     _lastPath = openFileDialog.FileName;
+
+                    //var d = new List<DataPoint>();
+                    //var fourierSound = _soundProcessor.FourierSounds.First();
+                    //for (int i = 0; i < _soundProcessor.FftLength / 2; i++)
+                    //{
+                    //    d.Add(new DataPoint((double)i * 1000 / _soundProcessor.FftLength / 2,
+
+                    //       fourierSound[i].Y));
+                    //}
+
+                    //Points = d;
+
+                    Points = _soundProcessor.Points;
                 }
 
             }

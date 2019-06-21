@@ -74,7 +74,7 @@
                                     <DataTemplate>
                                         <StackPanel>
                                             <TextBlock>
-                                                <Run Text="{Binding StartFreq, StringFormat=N2}"/>Hz - <Run Text="{Binding StopFreq,StringFormat=N2}"/>Hz x<Run Text="{Binding Scale, StringFormat=N2}"/>
+                                                <Run Text="{Binding CenterFrequency, StringFormat=N2}"/>Hz x<Run Text="{Binding Scale, StringFormat=N2}"/>
                                             </TextBlock>
                                             <Slider Minimum="0" Maximum="5" Value="{Binding Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
