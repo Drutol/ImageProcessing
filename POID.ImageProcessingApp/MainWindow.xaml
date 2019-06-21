@@ -76,7 +76,7 @@
                                             <TextBlock>
                                                 <Run Text="{Binding CenterFrequency, StringFormat=N2}"/>Hz x<Run Text="{Binding Scale, StringFormat=N2}"/>
                                             </TextBlock>
-                                            <Slider Minimum="0" Maximum="5" Value="{Binding Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <Slider Minimum="0.5" Maximum="15" Value="{Binding Scale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

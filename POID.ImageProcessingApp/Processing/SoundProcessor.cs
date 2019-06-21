@@ -246,17 +246,34 @@ namespace POID.ImageProcessingApp.Processing
                 //    Points.Add(new DataPoint(k, 0));
                 //}
 
-                double[] x = Enumerable.Repeat(0.0, 1024).ToArray();
+                //double[] x = Enumerable.Repeat(0.0, 1024).ToArray();
+                //x[0] = 1;// input signal (delta function example)
+                //var y = new List<double>(); // output signal
+                //ParametricEqualizer peq = new ParametricEqualizer(4, 1000, new double[] { 200, 250, 300, 350 }, new double[] { 5, 5, 5, 5 }, new double[] { 9, 9, 9, 9 }, new double[] { 0, 0, 0, 0 }, new double[] { 8, 10, 12, 14 });
+                //peq.run(x.ToList(), ref y);
+                //for (int i = 0; i < y.Count; i++)
+                //{
+                //    Points.Add(new DataPoint(i, y[i]));
+                //}
+
+                double[] x = Enumerable.Repeat(0.0, samplingFrequency).ToArray();
                 x[0] = 1;// input signal (delta function example)
                 var y = new List<double>(); // output signal
-                ParametricEqualizer peq = new ParametricEqualizer(4, 1000, new double[] { 200, 250, 300, 350 }, new double[] { 5, 5, 5, 5 }, new double[] { 9, 9, 9, 9 }, new double[] { 0, 0, 0, 0 }, new double[] { 8, 10, 12, 14 });
+                var peq = new ParametricEqualizer(
+                    bands.Count,
+                    samplingFrequency,
+                    bands.Select(band => (double) band.CenterFrequency).ToArray(),
+                    bands.Select(band => (double) band.Width).ToArray(),
+                    new double[] {9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9},
+                    new double[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                    bands.Select(band => (double) band.Scale).ToArray());
                 peq.run(x.ToList(), ref y);
                 for (int i = 0; i < y.Count; i++)
                 {
                     Points.Add(new DataPoint(i, y[i]));
                 }
-                foreach (var band in bands.Take(1))
-                {
+                //foreach (var band in bands.Take(1))
+                //{
                     //var filter = new double[filterLength];
 
                     //var f = new Section(band.CenterFrequency, band.Width/4.0, 9, 0, 3 * band.Scale, samplingFrequency);
@@ -311,50 +328,20 @@ namespace POID.ImageProcessingApp.Processing
                     //FourierTransform.FFT(fourierFilter, FourierTransform.Direction.Forward);
 
                     //filters.Add(fourierFilter);
-                }
+                //}
 
-
+                var fourierFilter = y.Take(fourierN).ToArray();
                 var complexPoints = Points.Select(point => new System.Numerics.Complex(point.Y, 0)).ToArray();
                 FourierTransform2.FFT(complexPoints, FourierTransform.Direction.Forward);
                 int z = 0;
-                Points = complexPoints.Select(complex => new DataPoint(z++ * 1000 / 1024.0, complex.Magnitude)).ToList();
-
-
-                //FourierSounds = new List<Complex[]>();
-                //SampleRate = reader.WaveFormat.SampleRate;
-                //Ts = 1.0 / SampleRate;
-                //FftLength = 512;
-                ////FftLength = 4096;
-                ////FftLength = 2048;
-                ////FftLength = 1024;
-                //Time = reader.TotalTime.TotalSeconds;
-                //var channels = reader.WaveFormat.Channels;
-                //var m = (int)Math.Log(FftLength, 2.0);
-
-                //for (var j = 0; j < complexPoints.Length / FftLength; j++)
-                //{
-                //    var samplesBuffer = complexPoints.Skip(j * FftLength).Take(FftLength).ToList();
-                //    var fftBuffer = new Complex[FftLength];
-                //    var fftPos = 0;
-                //    for (var i = 0; i < FftLength; i++)
-                //    {
-                //        fftBuffer[fftPos].X = sampleBuffer[i] *1;
-                //        fftBuffer[fftPos].Y = 0;
-                //        fftPos++;
-                //    }
-                //    FastFourierTransform.FFT(true, m, fftBuffer);
-
-                //    FourierSounds.Add(fftBuffer);
-                //}
-
-                return;
+                Points = complexPoints.Take(complexPoints.Length/2).Select(complex => new DataPoint(z++ * 1000 / 1024.0, complex.Magnitude)).ToList();
 
                 for (int w = 0; w < windows; w++)
                 {
                     var samples = sampleBuffer.Skip(windowLength * w).Take(windowLength).ToArray();
                     samples =
                         samples
-                        .Concat(Enumerable.Repeat((short)0, fourierN - windowLength)).ToArray();
+                            .Concat(Enumerable.Repeat((short)0, fourierN - windowLength)).ToArray();
                     var complexSamples = samples.Select(s => new System.Numerics.Complex(s, 0)).ToArray();
                     FourierTransform.FFT(complexSamples, FourierTransform.Direction.Forward);
 
@@ -362,13 +349,7 @@ namespace POID.ImageProcessingApp.Processing
 
                     for (int i = 0; i < complexSamples.Length; i++)
                     {
-                        var filterValue = new System.Numerics.Complex(1, 1);
-                        foreach (var filter in filters)
-                        {
-                            filterValue *= filter[i];
-                        }
-
-                        multiplied[i] = complexSamples[i] * filterValue;
+                        multiplied[i] = complexSamples[i] * fourierFilter[i];
                     }
 
                     FourierTransform.FFT(multiplied, FourierTransform.Direction.Backward);

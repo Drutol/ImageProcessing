@@ -92,52 +92,52 @@ namespace POID.ImageProcessingApp.ViewModels
                 new FrequencyBand
                 {
                     CenterFrequency = 31,
-                    Width = 30,
+                    Width = 5,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 62,
-                    Width = 30,
+                    Width = 15,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 125,
-                    Width = 60,
+                    Width = 40,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 250,
-                    Width = 125,
+                    Width = 75,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 500,
-                    Width = 250,
+                    Width = 100,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 1000,
-                    Width = 500,
+                    Width = 250,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 2000,
-                    Width = 1000,
+                    Width = 500,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 4000,
-                    Width = 2000,
+                    Width = 1000,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 8000,
-                    Width = 4000,
+                    Width = 1500,
                 },
                 new FrequencyBand
                 {
                     CenterFrequency = 16000,
-                    Width = 8000,
+                    Width = 2000,
                 },
             };
 
