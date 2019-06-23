@@ -190,20 +190,5 @@ namespace POID.ImageProcessingApp.ViewModels
 
 
         });
-
-
-        public RelayCommand PlayEqualizersSoundCommand => new RelayCommand(async () =>
-        {
-            short[] shortArray = _soundProcessor.Filtered;
-            byte[] byteArray = new byte[shortArray.Length * 2];
-            Buffer.BlockCopy(shortArray, 0, byteArray, 0, byteArray.Length);
-
-            IWaveProvider provider = new RawSourceWaveStream(
-                new MemoryStream(byteArray), new WaveFormat());
-
-            var _waveOut = new WaveOutEvent();
-            _waveOut.Init(provider);
-            _waveOut.Play();
-        });
     }
 }

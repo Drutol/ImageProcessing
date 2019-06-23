@@ -108,6 +108,19 @@ namespace POID.ImageProcessingApp.ViewModels
 
         });
 
+        public RelayCommand LoadSoundForTimeFilterCommand => new RelayCommand(() =>
+        {
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory = $"{AppDomain.CurrentDomain.BaseDirectory}Assets";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _lastPath = openFileDialog.FileName;
+
+                _soundProcessor.LoadForTimeDomainFilter(openFileDialog.FileName, FilterLength, Cutoff);
+            }
+
+        });
+
         public int Cutoff
         {
             get => _cutoff;
@@ -326,6 +339,9 @@ namespace POID.ImageProcessingApp.ViewModels
             var _waveOut = new WaveOutEvent();
             _waveOut.Init(provider);
             _waveOut.Play();
+
+
+            Points = _soundProcessor.Points;
         });
 
         public RelayCommand PlaySoundCommand => new RelayCommand( async () =>

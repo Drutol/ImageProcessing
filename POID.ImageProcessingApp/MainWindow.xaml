@@ -26,6 +26,7 @@
                     <Button Content="Load Wav To Freq Domain" Command="{Binding LoadSoundCommand}"/>
                     <Button Content="Load Wav To Time Domain" Command="{Binding LoadTimeSoundCommand}"/>
                     <Button Content="Load For Filter" Command="{Binding LoadSoundForFilterCommand}"/>
+                    <Button Content="Load For Time Filter" Command="{Binding LoadSoundForTimeFilterCommand}"/>
                     <Button Content="Reload" Command="{Binding ReLoadSoundForFilterCommand}"/>
                     <Button Content="Load for equalizer" Command="{Binding LoadSoundForEqualizerCommand}"/>
 
